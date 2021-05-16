@@ -292,3 +292,45 @@ const App = () => {
 ```
 
 ![](https://images.velog.io/images/abcd8637/post/6677995d-d00f-4e3c-8f6a-7d0be4c56915/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-05-15%2016.02.00.png)
+
+--- 
+## 📍 함수로 전달해주는 인자가 3개 이상일 때, 객체로 묶어서 전달하기
+
+함수로 넘겨주는 인자가 3개 이상이면, 객체 하나로 묶어 가독성이 좋아지게끔 하자. <a href ='https://github.com/qkraudghgh/clean-code-javascript-ko#%ED%95%A8%EC%88%98functions'>Robert C. Martin's - Clean Code 한글 번역판 함수(Functions)</a>
+
+예를 들어, `defaultScore` 객체에 `str`, `dex`, `int`, `luck`의 능력치가 들어있는데 버튼을 클릭 할 때마다 능력치를 올라가게 설정하려고 한다면, 다음과 같이 작성 할 수 있다. 여기서 중요한 점은 `quizScore`에서 인자를 하나하나 따로 떼어서 받는게 아니라 전체를 묶어서 보낸다는 점이다. 이후에 함수 안에서 변수를 따로 설정하는 과정이다.
+
+```javascript
+// src/pages/score/Constant.js
+const defaultScore = {
+  stats: {
+    str: 0,
+    dex: 0,
+    int: 0,
+    luck: 0,
+  },
+};
+
+// src/components/App.js
+const App = () => {
+  const [score, setScore] = useState(defaultScore);
+
+  const quizScore = (defaultScore) => {
+    const str = defaultScore.stats.str;
+    const dex = defaultScore.stats.dex;
+    const int = defaultScore.stats.int;
+    const luck = defaultScore.stats.luck;
+
+    setScore = (score) => ({
+      ...score,
+      stat: {
+        strScore: score.stats.str + str,
+        dexScore: score.stat.dex + dex,
+        intScore: score.stat.int + int,
+        luckScore: score.stat.luck + luck,
+      },
+    });
+  };
+};
+
+```
