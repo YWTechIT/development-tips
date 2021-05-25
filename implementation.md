@@ -334,3 +334,77 @@ const App = () => {
 };
 
 ```
+
+---
+## 📍 구조분해할당(Destructuring Assignment)으로 가독성 높이기
+
+`react`의 코드를 리팩토링하던 중 `handleClick` 함수를 `module`화 시켜놓고 `handleClick`을 사용해야하는 각각의 `page`에서 다음과 같이 선언했었다.
+`categoryHandleClick`의 `combat`, `supply`의 경우에 변수가 많지 않아 그러려니 할 수 있겠지만, `combatHandleClick`, `supplyHandleClick` 같은 경우 변수가 6개나 되기때문에 괜히 코드가 괜히 길어보이는 듯한 느낌을 받았다. 이때 `구조분해할당(Destructuring Assignment)`을 사용해서 코드를 깔끔하게 줄일 수 있다. `구조분해할당(Destructuring Assignment)`을 잘 모르겠다면 다음 <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment'>MDN문서</a>를 확인해보자. 아래의 코드는 구조분해할당을 하기 전의 코드이고 하단의 코드는 구조분해할당을 하고나서의 코드이다. 둘 중 어떤 코드가 가독성이 더 높아보이는가?! 사람마다 다를 수 있겠지만, 나는 하단의 코드가 더 가독성이 좋아보인다. 
+
+```javascript
+// Before Destructuring Assignment
+
+// pages/category/index.js
+const categoryHandleClick = (answer) => {
+  const combat = answer.combat;
+  const supply = answer.supply;
+
+  setScore ((score) => ({
+    ... skip code ...
+  }))
+}
+
+// pages/combat/index.js
+const combatHandleClick = (answer) => {
+  const infantry = answer.infantry;
+  const artillery = answer.artillery;
+  const armor = answer.armor;
+  const engineer = answer.engineer;
+  const signal = answer.signal;
+  const intelligence = answer.intelligence;
+
+  setScore ((score) => ({
+    ... skip code ...
+  }))
+}
+
+// pages/supply/index.js
+const supplyHandleClick = (answer) => {
+  const affair = answer.affair;
+  const medic = answer.medic;
+  const weapon = answer.weapon;
+  const police = answer.police;
+  const pray = answer.pray;
+  const band = answer.band;
+
+  setScore ((score) => ({
+    ... skip code ...
+  }))
+}
+```
+
+```javascript
+// after Destructuring Assignment
+
+// pages/category/index.js
+const categoryHandleClick = ({ combat, supply }) => {
+  setScore ((score) => ({
+    ... skip code ...
+  }))
+}
+
+// pages/combat/index.js
+const combatHandleClick = ({ infantry, artillery, armor, engineer, signal, intelligence }) => {
+  setScore ((score) => ({
+    ... skip code ...
+  }))
+}
+
+// pages/supply/index.js
+const supplyHandleClick = ({ affair, medic, weapon, police, pray, band }) => {
+  setScore ((score) => ({
+    ... skip code ...
+  }))
+}
+```
+
