@@ -413,3 +413,42 @@ const supplyHandleClick = ({ affair, medic, weapon, police, pray, band }) => {
 }
 ```
 
+---
+## 📍 이중 구조분해할당(Double Destructuring Assignment)으로 가독성 높이기2
+만약, 한 학생의 전체 점수를 갖고있는 다음과 같은 객체가 있다고 가정해보자. 이때 객체안의 값을 `update`하고 싶다면 `useState`를 사용해 다음과 같이 선언 할 수 있다. 그리고 `plusScore` 함수 내에서 객체 안에 있는 모든 값들을 `+1`씩 해준다면 다음과 같이 작성 할 수 있다.
+
+```javascript
+// constant/DEFAULT_SCORE/index.js
+const DEFAULT_SCORE = {
+  subjects : {
+    korean : 80,
+    math : 85,
+    english: 80
+  },
+  etc : {
+    attitude: 90,
+    volunteer: 95
+  },
+}
+
+
+// App.js
+const App = () => {
+  const [score, setScore] = useState(DEFAULT_SCORE);
+
+}
+
+// Utility/handleClick/index.js
+const plusScore = ({score, setScore}) => {
+  setScore((score) => ({
+    ...score,
+    subjects: {
+      korean: score.subjects.korean + 1,
+    }
+  }))
+}
+
+```
+
+
+
