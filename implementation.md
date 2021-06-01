@@ -414,7 +414,7 @@ const supplyHandleClick = ({ affair, medic, weapon, police, pray, band }) => {
 ```
 
 ---
-## 📍 객체 내의 객체를 구조분해할당(Double Destructuring Assignment)으로 표현하기
+## 📍 객체 내의 객체를 구조분해할당(Double Destructuring Assignment) 하기
 만약, `A`학생의 성적표와 기타 점수를 갖고있는 객체(Object)가 있다고 가정해보자. 그리고 `alert` 함수에서 `DEFAULT_SCORE`를 인자로 받고, 이때 `subjects`의 객체만을 구조분해할당을 하고 싶다면 다음과 같이 선언 할 수 있다.
 
 ```javascript
