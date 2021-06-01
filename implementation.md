@@ -450,5 +450,43 @@ const plusScore = ({score, setScore}) => {
 
 ```
 
+---
+## 📍 구조분해할당시 변수 이름 변경하기
+`구조분해할당(Destructuring_assignment)`이란 배열이나 객체의 속성을 해체하여 그 값을 개별 변수에 담을 수 있게 하는 `JS` 표현식이다. (출처: <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment'>MDN</a>)
 
+예를들어 `information` 객체(object)를 `alert` 함수에 인자(parameter)로 넘겨준다고 가정해보자. 그럼 다음과 같은 결과가 출력된다.
 
+```javascript
+// information Object
+information = {
+  name: 'AYW',
+  age: 27,
+  address: 'DongTan',
+}
+
+// alert Function
+const alert = ({ name, age, address }) => {
+  return {name, age, address}
+}
+
+// declare alert(information)
+const myInformation = alert(information)
+👉🏽 { name: 'AYW', age: 27, address: 'DongTan'}
+
+```
+
+여기서 비구조할당으로 넘어온 기존 변수를 새로운 이름으로 할당하려면 다음과 같이 사용 할 수 있다. 예를 들어 `name`을 `nickName`, `age`를 `number`, `address`를 `whereLive`로 변경해보자.
+
+```javascript
+// change parameter name at alert Function
+const alert = ( information ) => {
+  const { name: nickName, age: number, address: whereLive } = information;
+  return { nickName, number, whereLive };
+};
+
+// declare alert(information)
+const myInformation = alert(information)
+👉🏽 { nickName: 'AYW', number: 27, whereLive: 'DongTan'}
+```
+
+이처럼 `현재 변수의 이름: 변경하고 싶은 이름 = parameter` 형태로 사용하면 변수의 이름을 손쉽게 변경 할 수 있다.
