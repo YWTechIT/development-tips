@@ -414,11 +414,11 @@ const supplyHandleClick = ({ affair, medic, weapon, police, pray, band }) => {
 ```
 
 ---
-## 📍 이중 구조분해할당(Double Destructuring Assignment)으로 가독성 높이기2
-만약, 한 학생의 전체 점수를 갖고있는 다음과 같은 객체가 있다고 가정해보자. 이때 객체안의 값을 `update`하고 싶다면 `useState`를 사용해 다음과 같이 선언 할 수 있다. 그리고 `plusScore` 함수 내에서 객체 안에 있는 모든 값들을 `+1`씩 해준다면 다음과 같이 작성 할 수 있다.
+## 📍 객체 내의 객체를 구조분해할당(Double Destructuring Assignment)으로 표현하기
+만약, `A`학생의 성적표와 기타 점수를 갖고있는 객체(Object)가 있다고 가정해보자. 그리고 `alert` 함수에서 `DEFAULT_SCORE`를 인자로 받고, 이때 `subjects`의 객체만을 구조분해할당을 하고 싶다면 다음과 같이 선언 할 수 있다.
 
 ```javascript
-// constant/DEFAULT_SCORE/index.js
+// @ param { Object }
 const DEFAULT_SCORE = {
   subjects : {
     korean : 80,
@@ -432,23 +432,12 @@ const DEFAULT_SCORE = {
 }
 
 
-// App.js
-const App = () => {
-  const [score, setScore] = useState(DEFAULT_SCORE);
-
+const alert = ( DEFAULT_SCORE ) => {
+  const { subjects: {korean, math, english} } = DEFAULT_SCORE;
 }
-
-// Utility/handleClick/index.js
-const plusScore = ({score, setScore}) => {
-  setScore((score) => ({
-    ...score,
-    subjects: {
-      korean: score.subjects.korean + 1,
-    }
-  }))
-}
-
 ```
+
+이전에 배웠던 <a href='https://ywtechit.tistory.com/132?category=936149'>구조분해할당</a>보다 난이도가 있어보이지만 구조를 들여다보면 금방 이해가 된다.
 
 ---
 ## 📍 구조분해할당시 변수 이름 변경하기
