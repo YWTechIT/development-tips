@@ -415,6 +415,7 @@ const supplyHandleClick = ({ affair, medic, weapon, police, pray, band }) => {
 
 ---
 ## 📍 객체 내의 객체를 구조분해할당(Double Destructuring Assignment) 하기
+
 만약, `A`학생의 성적표와 기타 점수를 갖고있는 객체(Object)가 있다고 가정해보자. 그리고 `alert` 함수에서 `DEFAULT_SCORE`를 인자로 받고, 이때 `subjects`의 객체만을 구조분해할당을 하고 싶다면 다음과 같이 선언 할 수 있다.
 
 ```javascript
@@ -441,6 +442,7 @@ const alert = ( DEFAULT_SCORE ) => {
 
 ---
 ## 📍 구조분해할당시 변수 이름 변경하기
+
 `구조분해할당(Destructuring_assignment)`이란 배열이나 객체의 속성을 해체하여 그 값을 개별 변수에 담을 수 있게 하는 `JS` 표현식이다. (출처: <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment'>MDN</a>)
 
 예를들어 `information` 객체(object)를 `alert` 함수에 인자(parameter)로 넘겨준다고 가정해보자. 그럼 다음과 같은 결과가 출력된다.
@@ -479,3 +481,33 @@ const myInformation = alert(information)
 ```
 
 이처럼 `현재 변수의 이름: 변경하고 싶은 이름 = parameter` 형태로 사용하면 변수의 이름을 손쉽게 변경 할 수 있다.
+
+---
+## 📍 Key:Value형태인 Object에 map 함수 사용하기
+
+다음 `과목:점수` 형태인 `Object`에서 `map` 함수를 사용할때 3가지 방법이 있다. 
+
+1. Object.entries: `array` 형태로 `key, value`를 반환한다. 주의 할 점은 반환시에 객체의 순서를 보장하지 않으므로 정렬을 먼저 하고나서 사용하는것을 권장한다. (`Object.entries(obj).sort((a, b) => b[0].localeCompare(a[0]));`, 출처: <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/entries'> MDN</a>)
+2. Object.keys: `key`만 반환한다.
+3. Object.values: `value`만 반환한다.
+
+```javascript
+const subjects = { math: 90, english: 100, science: 80 };
+
+// idx는 index 번호를 반환하고 따로 명시하지 않았다.
+
+const getEntries = Object.entries(subjects).map((entrie, idx) => {
+  return console.log(entrie, idx);
+});
+👉🏽 ['math', 90], ['english', 100], ['science', 80]
+
+const getKeys = Object.keys(subjects).map((entrie, idx) => {
+  return console.log(entrie, idx);
+});
+👉🏽 math, english, science
+
+const getValues = Object.values(subjects).map((entrie, idx) => {
+  return console.log(entrie, idx);
+});
+👉🏽 90, 100, 80
+```
