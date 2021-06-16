@@ -511,3 +511,38 @@ const getValues = Object.values(subjects).map((entrie, idx) => {
 });
 👉🏽 90, 100, 80
 ```
+
+---
+## 📍 console 창에서 Warning: Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code 뜰 때
+
+<a href='https://ywtechmilitarytest.site/'>병과 테스트</a> 프로젝트를 잘 진행하고 있다가 갑자기 `console` 창에 다음 사진과 같은 `Warning`이 떴다.
+
+![](https://images.velog.io/images/abcd8637/post/3405476a-4c37-48f4-91a3-8e1283457b11/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-06-15%2014.38.45.png)
+
+구글링을 해보니까 <a href='https://github.com/nfl/react-helmet/issues/548'>nfl/react-helmet#548</a>, <a href='https://github.com/nfl/react-helmet/issues/623'>nfl/react-helmet#623</a> 에 비슷한 글이 있었는데 원인은 `strict mode`에서 `UNSAFE_componentWillMount`를 권장하지 않고 가끔 버그를 일으킬 수 있다는 내용이었다.
+
+해결방법을 찾아보니 보통 `React-helmet` 버전이 `^6.0.0` 이하에서 많이 발생한다는 내용이 대다수였다. 하지만 내가 설치한 `React-helmet` 버전은 `^6.1.0`이었고, 버전이 낮아서 발생한것 같진 않아보였다. (혹시 버전이 `^6.0.0`이하라면, 라이브러리 업데이트를 하고나서 `import` 할 때 `import { Helmet } from "react-helmet"`로 작성해보자.)
+
+다른 글 중에 `react-helmet-async`를 사용해보라는 글이 있어서 해당 라이브러리를 다운받고 다음과 같이 작성했더니 더 이상 `warning` 창이 뜨지 않았다. 깃허브에서 <a href= 'https://github.com/staylor/react-helmet-async'>react-helmet-async</a>패키지에 들어가보니까 `Helmet`과 사용법은 동일하고 스레드가 안전하지 않은 `react-side-effect`에 의존한다고 나와있다. 사용목적은 서버에서 비동기 작업을 수행 할 경우 데이터 요청별로 `Helmet`을 캡슐화 하기위해 사용하는 패키지라고 나와있다. 그냥 `Helmet`을 캡슐화 해준다고 생각하면 편하다.
+
+사용법은 다음 코드를 참고하자.
+
+```javascript
+import { Helmet, HelmetProvider } from "react-helmet-async";
+
+const Landing = () => {
+  return (
+    <>
+      <HelmetProvider>
+        <Helmet>
+          {/* contents... */}
+        </Helmet>
+      </HelmetProvider>
+    </>
+  )
+}
+
+export default Landing;
+```
+
+![](https://images.velog.io/images/abcd8637/post/fd2c1a0b-8625-47f7-ba88-c1c794f6e09d/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-06-15%2014.52.18.png)
