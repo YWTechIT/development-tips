@@ -546,3 +546,61 @@ export default Landing;
 ```
 
 ![](https://images.velog.io/images/abcd8637/post/fd2c1a0b-8625-47f7-ba88-c1c794f6e09d/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-06-15%2014.52.18.png)
+
+---
+## 📍 Object value에 NaN값이 있는지 확인하는 함수 만들기
+처음에 `NaN` 값을 확인하기 위해 `in`, `===`, `!=`를 사용했는데 판별이 되지 않았다. 
+왜그런지 <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/NaN'>MDN</a>공식문서에서 찾아보니까 `NaN` 판별은 비교판별 대신 `isNaN()` 혹은 `Number.isNaN()` 내장함수로 판별해야한다고 나와있었다. (⭐️ 공식문서의 중요성 ⭐️)
+
+`isNaN`, `Number.isNaN()`은 둘다 `NaN`을 판별하는 함수이지만 순서가 조금 다르다. 
+
+1. `isNaN()`: 현재 값을 숫자로 변환하고 `NaN` 판별
+2. `Number.isNaN()`: 현재 `typeof => Number` && 값이 `NaN` 일때만 판별
+
+이를 바탕으로 `key:value` 형태로 이루어진 객체에서 `isNaN`, `Number.isNaN()` 함수를 사용하니까 정확한 판별이 이루어지지 않았다. 왜냐하면 `object` 값을 `Number` 형태로 변환하면 `NaN`이 나오기 때문이다. 이 상태에서 `NaN` 함수 판별을 하게되면 `NaN`의 유무와 상관없이 `true`가 `return` 된다.
+
+```javascript
+const myObject = {name: '안영우', age: 27, sex: NaN}
+const yourObject = {name: '안영준', age: 14, sex: 'female'}
+
+console.log(Number(myObject))
+👉🏽 NaN
+
+console.log(Number(yourObject))
+👉🏽 NaN
+```
+
+그래서 `isNaN`, `Number.isNaN()` 함수를 사용하는 대신 `array`값에서 `NaN`이 있는지 확인하는 `includes()` 함수를 사용했다.
+
+1. Object의 Value만을 뽑아 `array(배열)`로 만든다.
+2. <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/includes'>includes()</a> 메소드를 이용해 배열이 `NaN`값을 포함하고 있는지 확인한다.
+
+```javascript
+const myObject = {name: '안영우', age: 27, sex: NaN}
+const yourObject = {name: '안영준', age: 14, sex: 'female'}
+
+const getCheckNaN = (object) => {
+    let arrayValues =  Object.values(object);
+    let current;
+
+    if (arrayValues.includes(NaN)){
+        current = true
+    }else{
+        current = false
+    }
+    return current
+}
+
+console.log(getCheckNaN(myInfo))
+👉🏽 true
+
+console.log(getCheckNaN(yourInfo))
+👉🏽 false
+```
+
+---
+## 📍 console 창 Received `true` for a non-boolean attribute 혹은 Received `true` for a non-boolean attribute 해결법
+<a href='https://ywtechmilitarytest.site/'>병과 테스트 프로젝트</a> 에서 `styled-component`로 `image-blur-up` 기능을 구현하던 도중 `console.log`창에 다음과 같은 `warning`이 나타난 적 있다.
+
+![](https://images.velog.io/images/abcd8637/post/fc214fc9-1d40-4f79-9752-354fefb6c492/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-07-02%2013.47.17.png)
+
