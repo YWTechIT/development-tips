@@ -24,6 +24,7 @@ const yourInfo: YourInfo = {
 }
 ```
 
+---
 ## 📍 배열타입 선언하기
 1. 첫번째 방법: 제네릭은 type에 변수를 제공하는 방법이며 제네릭이 없으면 어떤 것이든 포함 할 수 있다.
 2. 두번째 방법: 배열 요소들을 나타내는 타입 뒤에 `[]`를 사용한다.
@@ -55,4 +56,35 @@ console.log(myFamilyAges, myFamilyAges2)
 
 console.log(myInfo, yourInfo)
 👉🏽 [{address: 'HWASEONG'}], [{address: 'HWASEONG'}]
+```
+
+---
+## 📍 interface 사용하지 않고 써보기 사용하고 써보기
+
+```ts
+// do not use Interface
+const getMathScore = (scoreObj: {math: number}): number => {
+    return scoreObj.math
+}
+
+const myScore = {korean: 85, math: 95, english: 87}
+const myMathScore = getMathScore(myScore);
+
+console.log(myMathScore)
+👉🏽 95
+
+// do Interface
+interface PhysicalValue {
+    physical: number;
+}
+
+const getPhysicalScore = (scoreObj: PhysicalValue) => {
+    return scoreObj.physical
+}
+
+const yourScore = {music: 87, art: 69, physical: 92}
+const yourPhysicalScore = getPhysicalScore(yourScore);
+
+console.log(yourPhysicalScore)
+👉🏽 92
 ```
