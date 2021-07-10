@@ -88,3 +88,23 @@ const yourPhysicalScore = getPhysicalScore(yourScore);
 console.log(yourPhysicalScore)
 👉🏽 92
 ```
+
+---
+## 📍 TodoListItem Component 생성 후 props로 constant 보내기
+
+1. `TodoListItem` 컴포넌트를 생성한다.
+   
+```ts
+import React from 'react';
+
+const TodoListItem = () => {
+    return(
+        <>
+        <label>
+            <input />
+        </label>
+        </>
+    )
+}
+```
+
