@@ -68,3 +68,57 @@ console.log(argument)    // ?
 1. <a href='https://www.youtube.com/watch?v=-w-oJp6OVd4&t=9s'>ZeroCho의 JS 중급 강좌 12-1. call by value, call by reference, call by sharing</a>
 2. <a href='https://developer.mozilla.org/ko/docs/Glossary/Primitive'>MDN - 원시 값</a>
 3. <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Working_with_Objects'>MDN - Working_with_Objects</a>
+
+---
+## 📍 Spread 연산자(...)의 활용
+`TS(TypeScript)`를 공부하다가 `Spread`를 다양한 곳에 사용함을 깨닫고 정리하기 위해 글을 남긴다. 대체로 다음과 같은 상황에서 자주 쓰인다.
+
+1. 객체 복사(주소 참조가 아닌 값 복사, `origin` 값 변경 X)
+2. 객체 병합
+3. 객체 특정 값 변경(`useState` 사용 시)
+4. 잔여 연산자(rest operator) 사용
+
+다음의 코드를 하나씩 살펴보자.
+
+```javascript
+// 1. 객체 복사
+
+// * spread 연산자 미 사용(주소 참조, 본래의 값이 바뀐다.)
+const myScore = [80, 85, 90];
+const newScore = myScore
+newScore[0] = 50
+console.log(myScore)
+👉🏽 [50, 85, 90]
+
+// * spread 연산자 사용(값 참조, 본래의 값이 바뀌지 않는다.)
+const myScore = [80, 85, 90];
+const newScore = [...myScore];
+newScore[0] = 50
+console.log(myScore)
+👉🏽 [80, 85, 90]
+
+// * 객체 복사
+const myInfo = {name: 'AYW', age:27,  marriage: false}
+const newInfo = {...myInfo}
+console.log(newInfo)
+👉🏽 {name: 'AYW', age:27,  marriage: false}
+
+// 2. 객체 병합
+const firstInfo = {name: 'AYW'}
+const secondInfo = {age: 27}
+const resultInfo = {...firstInfo, ...secondInfo}
+console.log(resultInfo)
+👉🏽 {name: 'AYW', age:27}
+
+// 3. 객체 특정 값 변경
+const myInfo = {name: 'AYW', age:27,  marriage: false}
+const newInfo = {...myInfo, marriage: !myInfo.marriage}
+console.log(newInfo)
+👉🏽 {name: 'AYW', age:27,  marriage: true}
+
+// 4. 잔여 연산자(spread operator) 사용
+const myInfos = {money: 3000, name: 'AYW', age:27, }
+const {money, ...restInfo} = myInfos
+console.log(restInfo)
+👉🏽 {name: 'AYW', age:27}
+```
