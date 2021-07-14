@@ -122,3 +122,56 @@ const {money, ...restInfo} = myInfos
 console.log(restInfo)
 👉🏽 {name: 'AYW', age:27}
 ```
+
+---
+## 📍 Class vs ProtoType
+`JavaScript` `객체지향언어`이긴 하지만 `Class` 문법을 사용하지 않고 대신 `Prototype` 문법이 대신한다. (ES6 이후에 `class` 문법이 들어왔지만 이는 `JS`가 `class` 기반의 문법으로 바뀐것이 아니다.)
+
+그렇다면 `class`처럼 사용하는 `prototype` 문법과 그렇지 않은 문법은 언제 사용할까? 다음 코드를 살펴보자.
+
+```javascript
+// use class by prototype
+function myInfo() {
+    this.name = 'AYW'
+    this.age = 27
+}
+
+const myName = new myInfo();
+const myAge = new myInfo();
+
+console.log(myName.name);    // AYW
+console.log(myAge.age);    // 27
+
+// prototype
+function myInfo() {}
+
+myInfo.prototype.name = 'AYW';
+myInfo.prototype.age = 27;
+
+const myName = new myInfo();
+const myAge = new myInfo();
+
+console.log(myName.name);    // AYW
+console.log(myAge.age);    // 27
+```
+
+차이점이 느껴지는가? `class` 문법의 단점은 `myInfo` 내에 있는 값 모두가 메모리에 할당된다는 것이다. 즉, 100개의 객체를 선언하면 200개의 값이 메모리 변수에 올라가있다는 것이다. 만약, `a` 변수는 `name`과 `age` 모두를 사용하는 반면, `b` 변수는 `name`만 사용한다면 `age` 변수는 사용하지 않더라도 메모리에 할당된다는 이야기다. 이는 곧 메모리의 효율과 관련이 되는데, 내가 쓰고 싶은 변수만 메모리에 올리고 싶어!라고 할때 `prototype`을 쓰는 것이다. `prototype`을 쓰면 200개의 변수가 메모리에 저장되는 것이아니라, 선언하고 싶은 변수만큼 메모리에 올라간다.
+
+`prototype`의 순서는 다음과 같다.
+1. `prototype`의 빈 객체를 어딘가에 선언한다.
+2. `myName`과 `myAge`는 `prototype`의 빈 객체 내에 존재하는 `Object`의 값을 모두 사용할 수 있다.
+  * 쉽게 말해 `name`과 `age`를 `prototype`의 빈 객체 어딘가에 넣어두고 `myName`과 `myAge` 변수가 해당 값을 꺼내쓰는 형태라고 보면 된다.
+
+지금까지 내용으로 보아 `prototype`은 직접 함수내부에 선언하지도 않은 값을 넣어둘 수 있다고 배웠다. 그럼 어떻게 값을 저장한다는 말인가?
+해답은 `prototype Object` 와 `prototype Link`에 있는데, 하나씩 차근차근 살펴보자. 
+
+### 📍 ProtoType Object
+객체는 언제나 `함수(Function)`로 생성된다.
+
+```javascript
+function myInfo() {}    // 함수
+let myInfoObj = new myInfo()    // 함수로 객체를 생성
+```
+
+
+
