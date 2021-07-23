@@ -238,3 +238,59 @@ reference
 1. <a href='https://medium.com/@bluesh55/javascript-prototype-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0-f8e67c286b67'>javascript-prototype-이해하기</a>
 2. <a href='http://insanehong.kr/post/javascript-prototype/'>Javascript 기초 - Object prototype 이해하기</a>
 3. <a href='https://opentutorials.org/module/4047/24610'>생활코딩 - prototype</a>
+
+### 📍 배열의 특정 인덱스를 제거하거나 특정 범위만 반환하는 함수, filter, splice, slice
+
+알고리즘 문제를 풀다가 배열의 특정원소나 인덱스를 삭제하거나 특정 범위를 제거하고 싶은데 `MDN`을 찾아보니까 여러가지 함수가 존재했다. 상황마다 다르지만 로직을 구현 할 때 다음의 선택지를 보고 골라서 사용하면 된다.
+
+원본 배열을 변경하고 싶지않고 특정 인덱스를 제거하고 싶을 때(새로운 변수에 선언하고 싶을 때)
+1. <a href='https://developer.mozilla.org/ko/docs/orphaned/Web/JavaScript/Reference/Global_Objects/Array/filter'>filter</a>: 주어진 함수의 테스트를 통과하는 모든 요소를 모아 새로운 배열로 반환한다. `arr.filter(callback(element[, index ?[, array ?]])[, thisArg ?])`
+
+원본 배열을 변경하고 특정 인덱스를 제거하고 싶을 때(새로운 변수에 선언하고 싶을 않을 때)
+1. <a href='https://developer.mozilla.org/ko/docs/orphaned/Web/JavaScript/Reference/Global_Objects/Array/splice'>splice</a>: 배열의 기존 요소를 삭제 또는 교체하거나 새 요소를 추가하여 배열의 내용을 변경한다. `(array.splice(start, delete ?, item ?))`
+
+원본 배열을 변경하고 싶지않고 특정 범위를 잘라내고 싶을 때
+1. <a href='https://developer.mozilla.org/ko/docs/orphaned/Web/JavaScript/Reference/Global_Objects/Array/slice'>slice</a>: 어떤 배열의 `begin`부터 `end`까지(`end`는 미포함)에 대한 얕은 복사(shallow copy)본을 새로운 배열 객체로 반환시킨다. `arr.slice(begin ?, end ?)`
+
+정의만 봐서는 잘 이해가 안되니까 쉽게 예를 들어보자. 다음의 `arr`에서 나는 `arr[2]`의 값을 제거하고, `arr`의 `[1 : 3]`범위만 자르고 싶다.
+
+```javascript
+const arr = [0, 2, 1, 6]
+
+// filter
+const filterArr = arr.filter((item) => item !== arr[2])
+console.log(filterArr)
+👉🏽 [0, 2, 6]
+
+// splice
+arr.splice(2)
+console.log(arr)
+👉🏽 [0, 2, 6]
+
+// slice
+const sliceArr = arr.slice(1, 3)
+console.log(sliceArr)
+👉🏽 [2, 1]
+```
+
+여담으로 `slice`는 원본 객체를 `얕은 복사(shallowCopy)`까지 가능한데, 정말 `얕은 복사(shallowCopy)` 까지만 되는지 실험해봤다. 실험결과 `depth = 2`인 값을 변경시 원본값도 변경된것으로 보아 얕은복사까지만 가능했다.
+
+```javascript
+// depth = 1일 때 slice
+const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const copyArr = arr.slice();
+arr[2] = -9999
+
+console.log(copyArr)
+👉🏽 [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+// depth = 2일 때 slice
+const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+const copyArr = arr.slice();
+arr[0][2] = -9999
+
+console.log(copyArr)
+👉🏽 [[1, 2, -9999], [4, 5, 6], [7, 8, 9]];
+```
+
+
