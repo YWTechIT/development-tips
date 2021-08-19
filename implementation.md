@@ -338,5 +338,24 @@ const App = () => {
 export default App;
 ```
 
+---
+## 📍 useLayoutEffect, useEffect의 차이점 알아보기
+`react`를 사용 할 때 `paint screen` 단계 이후 즉, 컴포넌트가 화면에 렌더링 된 이후 `사이드 이펙트(side Effect)` (여기서 말하는 사이드 이펙트는 컴포넌트 내에서 데이터 가져오기, 구독 설정하기, 수동으로 컴포넌트의 DOM을 조작하는 작업 등을 말한다.)를 비동기적으로 호출할 때 주로 `useEffect`를 사용한다. 
 
+아래 사진은 <a href='https://github.com/donavon/hook-flow'>github</a>에서 가져온 `hook-flow` 사진인데, 한눈에 알 수 있어서 가져와봤다.
 
+![](https://images.velog.io/images/abcd8637/post/2cb835c9-eb26-4d1b-bd14-711c8a1695d5/hook-flow.png)
+
+다시 본론으로 돌아가서 화면에 `state`의 값이 바뀌어서 화면이 깜빡이거나 `DOM`을 호출하기 전에 무언가를 변경하고 싶을 때는 어떻게 해야할까? `paint screen` 단계 이전 즉, 화면이 그려지기 바로 전에 값을 동기적으로 호출하고 싶다는 생각이 들면 `useLayoutEffect` hook을 사용하면 된다.
+
+정말로 `useLayoutEffect`는 화면에 그려지기 전에 실행되는지 궁금하여 간단한 실험을 진행했다. 만약, `localStorage`에 저장된 값을 불러오는 작업을 사이드이펙트로 관리한다고 했을 때, `useEffect`, `useLayoutEffect` 중 어떤 코드로 작성해야 적합할까?
+
+잘모르겠다면 하단의 `gif`를 보고 어떤 `gif`가 `useEffect` 혹은 `useLayoutEffect`를 사용했을지 한번 고민해보자.
+
+![](https://images.velog.io/images/abcd8637/post/2bba6e7a-a5e7-443b-8b84-349e5a58b8d4/useLayoutEffect.gif)
+
+![](https://images.velog.io/images/abcd8637/post/35c4d223-5afc-4b52-91cb-ecd43f5cfbdf/useEffect.gif)
+
+너무 쉬웠는가? 정답은 첫번째 `gif`가 바로 `useLayoutEffect`를 사용한 코드이고 두번째 `gif`는 `useEffect`를 사용한 코드이다. 어떤 차이점이 있는지 눈을 크게 뜨고 보면 보일텐데, 두번째 `gif`는 화면에 렌더링 된 이후에 `localStorage` 값을 가져오기 때문에 처음에는 빈 공간이었다가 나중에 값이 채워지는것을 알 수 있고 반면에, 첫번째 `gif`는 브라우저에 그려지기 전에 로직을 실행하므로 말끔하게 가져오는것을 알 수 있다.
+
+이런 세세한 부분까지 신경써야해..?라는 생각이 들 수도 있다. 그러나 실험과 같이 값이 작은 경우에는 미미할 수 있지만 실제 배포 이후 값이 커졌을 때, 브라우저가 조금이라도 느려지게 된다면 고객의 경험성이 좋지 않을 수 있다. 남들과 경쟁력있는 `front-end`가 되려면 이런 디테일한 부분까지 캐치 할 수 있어야 한다고 생각한다.
