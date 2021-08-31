@@ -362,3 +362,62 @@ export default App;
 
 reference
 1. <a href='https://ko.reactjs.org/docs/hooks-effect.html'>react-docs-hooks-effect</a>
+
+---
+## 📍 object(key:value) type, interface 선언하기
+`TS`를 사용하다가 `string`, `number`, `boolean`, `array`와 같은 자료형에는 `type`을 잘 선언할 수 있었는데, 유독 `key:value`와 같은 `object`는 `type`을 어떻게 선언해야하는지 헷갈렸다. 나는 이때까지 `key:value`형태의 `object`는 다음과 같이 선언했다.
+
+```ts
+interface PostType{
+    sort: string;
+}
+
+const post: PostType = {sort: "asc"}
+console.log(post);
+👉🏽 { sort: 'asc' } 
+```
+
+`ReactQuery`를 사용하여 `useInfiniteQuery`를 구현하는 도중 함수 `parameter`로 반환되는 `key:value` 형태인 `post`값의 `key`는 `type`만 알고 `값`은 정확하지 않을 때 혹은 `post`값의 `value`는 `type`만 알고 `값`은 정확하지 않을 때, 혹은 `비구조할당문법(destructuring assignment)`을 사용했을 때는 `type`을 어떻게 선언해야하는지 궁금했다. 그래서 배워보자. how to declare object type!! 
+
+```ts
+// post의 `key`는 잘 모르지만 `type`은 확실 할 때
+type SortType = {[key in string]: string};
+const post = {sort: "asc"};
+const {sort} = post as SortType;
+
+// post의 `key` 값을 몇 개 알고 있을 때
+type Keys = "sort" | "filter" 
+type SortType = {[key in Keys]: string};
+const post = {sort: "asc"};
+const {sort} = post as SortType;
+
+// post의 `value` 값을 몇 개 알고 있을 때
+type Values = "asc" | "desc" | "id";
+type SortType = {[key in string]: Values};
+const post = {sort: "asc"};
+const {sort} = post as SortType;
+
+// post의 `key:value`를 대략적으로 알고 있을 때
+type Keys = "sort" | "filter" 
+type Values = "asc" | "desc" | "id";
+type SortType = {[key in Keys]: Values};
+const post = {sort: "asc"};
+const {sort} = post as SortType;
+
+// post의 정확한 `key:value` 모두 확실한 값일 때
+type SortType = {sort: string};
+const post = {sort: "asc"};
+const {sort} = post as SortType;
+
+// array형태로 return되는 post type 선언
+type PostObj = {[key in string]: string};
+type PostType = Array<string | PostObj>
+const post: PostType = ["usePosts", {sort: "asc"}];
+```
+
+지금까지 작성한 코드를 토대로 살펴보면 `비구조할당`의 `type`선언은 변수위치가 아닌 할당하는 값 뒤에 `as`형태로 붙였다. 이를 한국말로 다운 캐스팅 혹은 영어로 `Type Assertions`이라고 부른다. 이와 관련한 <a href='https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions'>TypeScriptLang</a>에 나와있는 영어를 번역하면 다음과 같은 글을 읽을 수 있다. 때때로 `TS`가 알 수 없는 값의 유형에 대한 정보가 있을 것입니다. (...중략...) 이러한 상황에서 `Type Assertions`을 사용하여 보다 구체적인 유형을 지정할 수 있습니다. 또한, `TypeScript Deep Dive`에는 `TypeScript`에서는 시스템이 추론 및 분석한 타입 내용을 우리가 원하는 대로 얼마든지 바꿀 수 있습니다. 이때 "타입 표명(type assertion)"이라 불리는 메커니즘이 사용됩니다. TypeScript의 타입 표명은 프로그래머가 컴파일러에게 내가 너보다 타입에 더 잘 알고 있고, 나의 주장에 대해 의심하지 말라고 하는 것과 같습니다. 쉽게 말해 내가 타입을 선언하니까 내 말대로 해가 된다.
+
+reference
+1. <a href='https://www.designcise.com/web/tutorial/how-to-specify-types-for-destructured-object-properties-using-typescript'>How to Specify Types for Destructured Object Properties Using TypeScript?</a>
+2. <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions">typescriptlang</a>
+3. <a href="https://radlohead.gitbook.io/typescript-deep-dive/type-system/type-assertion">TypeScript Deep Dive</a>
