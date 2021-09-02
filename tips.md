@@ -239,6 +239,7 @@ reference
 2. <a href='http://insanehong.kr/post/javascript-prototype/'>Javascript 기초 - Object prototype 이해하기</a>
 3. <a href='https://opentutorials.org/module/4047/24610'>생활코딩 - prototype</a>
 
+---
 ### 📍 배열의 특정 인덱스를 제거하거나 특정 범위만 반환하는 함수, filter, splice, slice
 
 알고리즘 문제를 풀다가 배열의 특정원소나 인덱스를 삭제하거나 특정 범위를 제거하고 싶은데 `MDN`을 찾아보니까 여러가지 함수가 존재했다. 상황마다 다르지만 로직을 구현 할 때 다음의 선택지를 보고 골라서 사용하면 된다.
@@ -293,4 +294,75 @@ console.log(copyArr)
 👉🏽 [[1, 2, -9999], [4, 5, 6], [7, 8, 9]];
 ```
 
+---
+### 📍 일급객체(First Class Object)에 대해서 간략하게 알아보자
+프론트엔드 신입 면접에서 `First Class Object`가 무엇인지 설명해주세요. 라는 첫 질문을 듣고 머리가 벙쪘다. 용어를 들어봤으면 관련된 내용을 쥐어짜내기라도 할 텐데 도무지 생각이 나지 않았기 때문이다.
 
+![](https://images.velog.io/images/abcd8637/post/b1f82ec5-8b0b-43dc-85ee-c70e3ceeb1a5/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-09-03%2006.48.36.png)
+
+답답함을 이기지 못하고 면접관분께 시원하게 말씀드렸다. 그런 용어를 처음 듣습니다.. 공부를 더 해야겠습니다.. 면접관님은 일급 객체에 대해 자세히 설명을 해주셨다. 그리고 밀려오는 자괴감..
+
+![](https://images.velog.io/images/abcd8637/post/dbfc2358-95f7-45f3-a300-66ca7d904472/More_details_be_omitted.jpeg)
+
+비록 면접에 떨어진 이유가 일급객체를 몰라서 떨어진것은 아니지만 `JS`의 기초적인 내용을 많이 공부해야겠다는 생각이 들었다. 그래서 알아보자 일급객체(`First class object`)란 무엇인가?
+
+`MDN`에서 찾아보니까 다음과 같은 정의가 나온다. `함수`를 변수처럼 다루는 언어는 일급 함수를 가졌다고 표현한다. 이 문장을 보고 바로 `함수 표현식`이 생각났다. 함수표현식과 함수선언식의 차이는 안다고 우쭐댔지만 정작 `일급객체`를 모르는 나.. 
+
+![](https://images.velog.io/images/abcd8637/post/7d52d695-9b60-4ee8-a90d-4b2f3fb18cb2/jjvNX.jpeg)
+
+이외에도 다음과 같은 경우를 만족하면 일급 객체라고 부른다. 코드와 함께 살펴보자.
+
+1. Functions can be assigned to variables: 함수를 변수처럼 선언 할 수 있는가?
+
+```javascript
+const sayHi = function(){
+    return "Hi";
+}
+
+console.log(sayHi());
+👉🏽 Hi
+```
+
+2. Functions can be passed to arguments to other functions: 함수의 인자로 함수를 넣을 수 있는가?
+```javascript
+const sayHelloToPerson = (greet, person) => {
+    return greet() + " " + person
+}
+
+const sayGreet = function(){
+    return "Hello,"
+}
+
+console.log(sayHelloToPerson(sayGreet, "Ted"));
+👉🏽 Hello, Ted
+```
+
+3. Functions can be returned from other functions: 함수의 리턴 값으로 함수를 사용 할 수 있는가?
+```javascript
+const sayHello = function(){
+    return function(greet){
+        return greet
+    }
+}
+
+const sayHelloOuter = sayHello();
+const sayHelloInner = sayHelloOuter("Hello");
+console.log(sayHelloInner)
+👉🏽 Hello
+
+// closure를 사용한 방법
+const sayYouAndMe = function(yourName){
+    return function(myName){
+        return yourName + "과 " + myName;
+    }
+}
+
+const sayYourName = sayYouAndMe("elon");
+const sayMyName = sayYourName("Ted");
+console.log(sayMyName);
+👉🏽 elon과 Ted
+```
+
+reference
+1. <a href ='https://developer.mozilla.org/ko/docs/Glossary/First-class_Function'>MDN</a>
+2. <a href='https://www.youtube.com/watch?v=4UeWzn4jzwM'>First Class Functions in JavaScript - Youtube</a>
