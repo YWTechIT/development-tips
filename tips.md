@@ -366,3 +366,71 @@ console.log(sayMyName);
 reference
 1. <a href ='https://developer.mozilla.org/ko/docs/Glossary/First-class_Function'>MDN</a>
 2. <a href='https://www.youtube.com/watch?v=4UeWzn4jzwM'>First Class Functions in JavaScript - Youtube</a>
+
+---
+### 📍 메서드 내부 함수에서 this를 우회하는 방법 4가지
+만약, `scope chain`처럼 변수가 없을 때 가장 가까운 스코프의 `Lexical Environment`를 찾고, 거기도 없으면 상위 스코프를 탐색하듯이 `this`도 호출 주체가 없을 때는 자동으로 전역객체를 바인딩하지 않고 호출 당시 주변 환경의 `this`를 상속하고 싶다면 어떤 방법을 사용할까? 현재 컨텍스트에 바인딩된 대상이 없으면 직전 컨텍스트의 `this`를 바라보는 것처럼 말이다. 아쉽게도 `ES5` 까지는 자체적으로 내부함수에 `this`를 상속할 방법은 없지만 우회하는 방법은 있다. 지금부터 메서드의 내부함수에서 메서드의 `this`를 그대로 바라보게 하기 위한 방법 4가지를 알아보자. 그리고 `ES6`에서 `this`를 바인딩하지 않고 상위 스코프의 `this`를 그대로 활용가능한 `화살표 함수(arrow-function)`로도 사용한 코드를 살펴보자. 결과는 모두 동일하다.
+
+1. `this` 변수 저장
+2. `call`
+3. `bind`
+4. `화살표함수`
+
+```javascript
+// this 변수 저장
+var obj = {
+    outer: function () {
+        console.log(this);
+
+        var self = this;
+        var innerFunc = function () {
+            console.log(self);
+        };
+        innerFunc();
+    },
+};
+obj.outer();
+
+// call
+var obj = {
+	outer: function(){
+		console.log(this);
+		var innerFunc = function(){
+			console.log(this);
+		}
+		innerFunc.call(this);
+	}
+}
+obj.outer();
+
+// bind
+var obj = {
+	outer: function(){
+		console.log(this);
+		var innerFunc = function(){
+			console.log(this);
+		}.bind(this);
+		innerFunc();
+	}
+}
+obj.outer();
+
+// arrow Function
+var obj = {
+    outer: function () {
+        console.log(this);
+        var innerFunc = () => {
+            console.log(this);
+        };
+        innerFunc();
+    },
+};
+obj.outer();
+
+
+👉🏽 { outer: [Function: outer] }
+👉🏽 { outer: [Function: outer] }
+```
+
+reference
+1. <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=206513031'>코어 자바스크립트 - 정재남</a>
