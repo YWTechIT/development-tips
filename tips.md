@@ -434,3 +434,19 @@ obj.outer();
 
 reference
 1. <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=206513031'>코어 자바스크립트 - 정재남</a>
+
+---
+### 📍 2차원 배열 선언하기
+`Array.from` 메서드를 사용하여 2차원 배열을 선언 할 수 있다. 예를 들어 3행 4열을 0으로 초기화한 2차원 배열을 만들고 싶다면 다음과 같이 작성한다.
+
+```javascript
+let row = 3;
+let column = 4;
+let arr = Array.from(Array(row), ()=> Array(column).fill(0));
+
+console.log(arr)
+👉🏽 [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ] ]
+```
+
+reference
+1. <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/from'>MDN</a>
