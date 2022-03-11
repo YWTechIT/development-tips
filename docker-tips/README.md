@@ -1,5 +1,4 @@
 # docker-tips
-
 ### 📍 Error: EPERM: operation not permitted, scandir 권한 오류
 `docker-compose`를 사용하다가 권한 문제로 다음과 같은 오류가 발생했다.
 
