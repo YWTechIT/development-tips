@@ -1,4 +1,211 @@
 # docker-tips
+
+### 📍 docker-compose dev, prod 모드로 리팩토링하기
+`docker-compose`를 사용하여 `nginx`를 배포 할 때 매번 가상 환경에서 `SSL`을 적용하는 과정을 거쳐야했다. 예를 들어 `nginx.conf`의 `server`코드를 `80`에서 `443`으로 바꾸고 인증서의 경로를 추가하는 과정과 `docker-compose - volumes`에 `letsencrypt` 인증서를 넣는 과정이 포함됐다. 하지만 매번 `SSL`을 적용하는 과정을 거치다보니 귀찮았다. 그래서 `SSL`을 적용한 버전과 `SSL`을 적용하지 않은 버전으로 나누면 어떨까?라는 생각을 했다. 
+
+<a href='https://docs.docker.com/compose/reference/#use--f-to-specify-name-and-path-of-one-or-more-compose-files'>docker</a> 공식문서를 찾아보니 `-f` 명령어를 사용하여 특정 파일을 빌드 할 수 있다고 했다. 만약, 여러개의 `docker-compose` 파일을 빌드하고 싶으면 `-f`를 여러번 사용하면 되고 `-f`를 사용한 순서대로 빌드한다고 나와있었다. 또 `docker-compose`의 `service` 이름이 같다면 이전 파일에 `override`한다고 명시되어있다.
+
+그래서 파일 구조를 기존에 `docker-compose.yml` 하나만 사용했다면 `docker-compose.yml`, `docker-compose-dev.yml`, `docker-compose-prod.yml`처럼 파일을 3개로 나누었고, 공통으로 적용하는 코드는 `docker-compose.yml` 파일에 작성하고 `SSL`을 적용하지 않는 버전은 `docker-compose-dev.yml`에 저장하고, `SSL`을 적용하는 버전은 `docker-compose-prod.yml`에 저장했다. 그러면 공통으로 작성한 파일에 `dev` 버전과 `prod` 버전이 `override`되니까 명령어만 바꿔주면 해결되는 것이다. 마찬가지로 `nginx`의 `volume` 또한 `SSL`을 적용할 때의 `nginx.conf`와 `SSL`을 적용하지 않을 때의 `nginx.dev.conf`로 나누어 적용했더니 가상환경에서 파일을 수정하는 번거로움을 덜 수 있었다.
+
+`doc`을 따라 작업해보니 이 방식은 프론트에서 `webpack`을 사용할 때 `webpack-merge`를 사용하여 `development`와 `production` 모드로 나눌 때 `webpack.config.js`를 제거하고 `webpack.common.js`, `webpack.dev.js`, `webpack.prod.js`로 나누는 과정과 비슷하다고 생각했다.
+
+나와 같은 문제로 고민하고 있는 분들에게 도움이 되었으면 좋겠고, 마지막으로 실제로 어떻게 코드를 분할 했는지 명령어, `docker-compose`, `nginx` 코드를 올리며 글을 마치겠다.
+
+```bash
+# before command
+docker-compose -f docker-compose.yml up -d --build
+
+# after command
+docker-compose -f docker-compose.yml -f docker-compose-prod.yml up -d --build
+```
+
+```yaml
+# before refactor docker-compose.yml
+# docker-compose.yml
+version: "3"
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./Frontend/dist/:/usr/share/nginx/html
+      - ./Nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    ports:
+      - "7777:7777"
+    env_file:
+      - ./Backend/.env
+
+# after refactor docker-compose.yml
+# docker-compose.yml
+version: "3"
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    ports:
+      - "7777:7777"
+    env_file:
+      - ./Backend/.env
+
+# docker-compose-dev.yml
+version: "3"
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./Frontend/dist/:/usr/share/nginx/html
+      - ./Nginx/nginx-dev.conf:/etc/nginx/nginx.conf
+    ports:
+      - "1111:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      args:
+        NODE_ENV: development
+    volumes:
+      - ./:/app
+    command: npm run dev
+
+# docker-compose-prod.yml
+version: "3"
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./Frontend/dist/:/usr/share/nginx/html
+      - ./Nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./dhparam:/etc/nginx/dhparam
+      - /etc/letsencrypt:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    command: npm run deploy
+```
+
+```javascript
+// nginx.conf
+user nginx; 
+worker_processes 1; 
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    access_log  /var/log/nginx/access.log;
+    error_log   /var/log/nginx/error.log;
+
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen 80;
+        server_name <domain>;
+        root /usr/share/nginx/html/;
+
+        location ~ /.well-known/acme-challenge {
+            allow all;
+            root /usr/share/nginx/html/;
+        }
+
+        location / {
+            return 301 <domain>;
+        }
+    }
+
+    server {
+        listen 443 ssl;
+        server_name <domain>;
+        root /usr/share/nginx/html/;
+        server_tokens off;
+        ssl_certificate /etc/nginx/ssl/live/<domain>/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/live/<domain>/privkey.pem;
+        ssl_dhparam /etc/nginx/dhparam/dhparam-2048.pem;
+
+        ssl_buffer_size 8k;
+        ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+        ssl_prefer_server_ciphers on;
+        ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+
+        location / {
+           try_files $uri /index.html;
+        }
+
+        location /api {
+            proxy_pass http://backend:7777;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+}
+
+// nginx.dev.conf
+user nginx; 
+worker_processes 1; 
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    access_log  /var/log/nginx/access.log;
+    error_log   /var/log/nginx/error.log;
+
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        server_name localhost;
+        root /usr/share/nginx/html/;
+
+        location / {
+            try_files $uri /index.html;
+        }
+
+        location /api {
+            proxy_pass http://backend:7777;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+}
+```
+
+reference
+1. https://docs.docker.com/compose/reference/#use--f-to-specify-name-and-path-of-one-or-more-compose-files
+2. https://docs.docker.com/compose/reference/#specifying-multiple-compose-files
+3. https://webpack.kr/guides/production/#setup
+
+---
 ### 📍 Error: EPERM: operation not permitted, scandir 권한 오류
 `docker-compose`를 사용하다가 권한 문제로 다음과 같은 오류가 발생했다.
 
