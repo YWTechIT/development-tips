@@ -450,3 +450,60 @@ console.log(arr)
 
 reference
 1. <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/from'>MDN</a>
+
+---
+### 📍 DOM 속성에 이벤트 핸들러 연결하기
+이벤트 핸들러를 DOM요소에 연결 할 때 보통 2가지 방법을 사용하는데, 첫번째로 `on`속성과, 두번째는 `addEventListener`이다. 전자의 경우 빠르지만 지저분한 방법이라고 말한다. 예를 들어 `ondblclick`, `onmouseover`, `onblur`, `onfocus` 속성도 있다.
+
+```javascript
+const button = document.querySelector("button");
+button.onclick = () => {
+    console.log("Click managed using onclick property");
+}
+```
+
+![](https://images.velog.io/images/abcd8637/post/5b42d540-0dce-47f7-adb6-51e47cbbf645/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-21%2021.46.50.png)
+
+이런 해결책은 잘 동작하더라도 일반적으로 나쁜 관행으로 관주되는데, 그 이유는 속성을 사용하면 한번에 하나의 핸들러만 연결할 수 있기 때문이다. 따라서 코드가 `onclick` 핸드러를 덮어 쓰면 원래 핸들러는 영원히 손실된다. 그래서 더 나은 접근 방식인 `addEventListener` 메서드를 사용한다.
+
+`addEventListener`의 첫 번째 매개변수는 이벤트 타입이고, 두번째 매개변수는 콜백이며 이벤트가 트리거될 때 호출된다. 다음 코드처럼 모든 핸들러를 연결 할 수 있다.
+
+```javascript
+const button = document.querySelector("button")
+const firstHandler = () => {
+    console.log("First Handler");
+}
+const secondHandler = () => {
+    console.log("Second Handler");
+}
+
+button.addEventListener("click", firstHandler)
+button.addEventListener("click", secondHandler)
+```
+
+![](https://images.velog.io/images/abcd8637/post/0d5b2de5-bd9b-4654-a2da-423bea62d2f1/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-21%2021.46.22.png)
+
+나아가 `DOM`에 요소가 더 이상 존재하지 않으면 메모리 누수를 방지하고자 이벤트 리스너를 삭제해야하는데, 이때 `removeEventListener` 메서드를 사용한다. 다음 코드에서 가장 중요한 점은 이벤트 핸들러를 제거하려면 `removeEventListener`메서드에 매개변수로 전달할 수 있도록 이에 대한 참조를 유지해야 한다는 것이다.
+
+```javascript
+const button = document.querySelector("button")
+const firstHandler = () => {
+    console.log("First Handler");
+}
+const secondHandler = () => {
+    console.log("Second Handler");
+}
+
+button.addEventListener("click", firstHandler)
+button.addEventListener("click", secondHandler)
+
+window.setTimeout(() => {
+    button.removeEventListener('click', firstHandler)
+    button.removeEventListener('click', secondHandler)
+    console.log("Removed Event Handlers");
+ }, 1000)
+```
+
+Reference
+1. <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=260034588'>프레임워크 없는 프론트엔드 개발 - 프란세스코 스트라츨로</a>
+2. https://developer.mozilla.org/ko/docs/Web/API/EventTarget/removeEventListener
