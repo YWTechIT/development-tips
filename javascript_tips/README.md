@@ -504,6 +504,8 @@ window.setTimeout(() => {
  }, 1000)
 ```
 
+![](https://images.velog.io/images/abcd8637/post/c4230ec0-f042-46f5-9fe6-2c9eb71707c8/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-21%2021.52.16.png)
+
 Reference
 1. <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=260034588'>프레임워크 없는 프론트엔드 개발 - 프란세스코 스트라츨로</a>
 2. https://developer.mozilla.org/ko/docs/Web/API/EventTarget/removeEventListener
