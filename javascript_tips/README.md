@@ -736,7 +736,7 @@ let notIncludeSpecialCharacter = s.replace(/[^A-z | " "]/g, '');
 👉🏽 found time study yduts emit dnuof
 ```
 
-지금까지 정규표현식의 개념과 응용 예제를 간략하게 살펴보았다. 처음 정규표현식을 접했을 땐 도통 이해가 되지 않은 문법이었는데, 몇번 사용해버릇하니까 반복문, 조건문보다 이용하기가 쉽고 편했다. 조금씩 정규표현식을 사용하며 경험을 쌓고 나중에 현업에 도입하게되면 까먹지 않도록 기록해둬야 겠다.
+지금까지 정규표현식의 개념과 응용 예제를 간략하게 살펴보았다. 처음 정규표현식을 접했을 땐 도통 이해가 되지 않은 문법이었는데, 몇번 사용해버릇하니까 반복문, 조건문보다 이용하기가 쉽고 편했다. 조금씩 정규표현식을 사용하며 경험을 쌓고 나중에 현업에 도입하게되면 예제를 까먹지 않도록 기록해둬야 겠다.
 
 Reference
 1. https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/RegExp
