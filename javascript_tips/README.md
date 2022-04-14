@@ -509,3 +509,236 @@ window.setTimeout(() => {
 Reference
 1. <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=260034588'>프레임워크 없는 프론트엔드 개발 - 프란세스코 스트라츨로</a>
 2. https://developer.mozilla.org/ko/docs/Web/API/EventTarget/removeEventListener
+
+---
+### 📍 RegExp(정규표현식)의 개념과 응용 예제 살펴보기
+`RegExp`는 정규표현식이라고 부르는데 문자열을 대상으로 패턴 매칭 기능을 제공한다. 패턴 매칭 기능이랑 특정 패턴과 일치하는 문자열을 검색하거나 추출 또는 치환할 수 있는 기능을 말한다. 여러 방면에서도 사용되지만 나는 알고리즘 문제를 풀거나 `util` 관련 함수를 만들 때 주로 사용한다. 정규표현식의 장점은 반복문과 조건문 없이 패턴을 정의하고 테스트하는 것으로 간단히 체크할 수 있다. 하지만, 여러가지 기호를 혼합하여 사용하기 때문에 처음 접한다면 가독성이 매우 좋지 못한 단점이 있다. 정규표현식에는 다양한 패턴이 있지만 그 중 대표적으로 쓰이는 것들만 알아보자.
+
+본론으로 들어가기 전에 정규 표현식의 검색 방식을 설정하는 플래그가 있는데, 총 6개의 플래그가 있다. 플래그는 여러개 넣을 수 있으며, 플래그를 사용하지 않은 경우에는 대소문자를 구분하여 패턴을 검색한다. 또한 검색 매칭 대상이 여러개여도 첫 번째 매칭 대상만 검색하고 종료한다.(여러개의 매칭 결과를 반환하려면 `g`플래그를 사용하면 된다.)
+
+```javascript
+1. `g`(global): 패턴과 일치하는 모든 값들을 전역 검색한다. (반성문을 영어로 해석한 것이 아님 🙃)
+2. `i`(ignoreCase): 대소문자를 구분하지 않고 패턴을 검색한다.
+3. `m`(multiLine): 문자열의 행이 바뀌더라도 패턴 검색을 지속한다.
+4. `s`(source): 개행 문자인 `\n`도 포함하도록 활성화 한다.
+5. `u`(unicode): 유니코드 전체를 지원한다.
+6. `y`(sticky): 문자 내 특정 위치에서 검색을 진행하는 `sticky` 모드를 활성화 시킨다.
+```
+
+하나만 더 알아보자. 바로 패턴인데, 플래그는 정규 표현식의 검색 방식을 설정하기 위해 사용된다면, 정규표현식의 패턴은 문자열의 일정한 규칙을 표현하기 위해 사용한다. 패턴은 문자열의 따옴표 대신 `/`로 열고 닫는다. 즉, `"Hello"`가 아니라 `/Hello/`로 처럼 사용하는 것이다. 만약, 따옴표를 포함한다면 따옴표까지도 패턴에 포함되니 이 점에 주의하자. 패턴의 종류는 마찬가지로 여러개 있지만 주로 사용하는 패턴은 다음과 같다.
+
+1. `[ ]` : 괄호안에 있는 값은 `or` 을 나타냄
+2. `\d`: [ 0-9 ]를 의미함
+3. `\D`: 숫자가 아닌 문자를 의미함
+4. `\w`: 알파벳, 숫자, 언더스코어를 의미함( `[ A-Za-z0-9 ]`)
+5. `\W`: 알파벳, 숫자, 언더스코어가 아닌 문자를 의미함
+6. `/s`: 여러가지 공백 문자(스페이스, 택 등)를 의미한다. `[/t/r/n/v/f]` 와 같은 의미다.
+7. `*`: 이전 항목을 0번 이상 반복함
+8. `+`: 이전 항목을 1회 이상 반복함
+9. `^`: `[ ]` 내부에 있는 `^` 는 `not` 을 의미하고, `[ ]` 외부에 있는 `^` 는 문자열의 시작을 의미한다.
+10. `$`: 문자열의 마지막을 의미한다.
+11. `?`: 앞선 패턴이 최대 한 번 이상(0번 포함) 반복되는지를 의미한다. 즉, 앞선 패턴 (`s`)이 있거나 없어도 매치된다.
+12. `{m,n}`: 반복 검색 패턴으로 최소 `m`번, 최대 `n`번 반복되는 문자열을 의미한다. 콤마뒤에 공백이 오지 않게 주의하자.
+
+자, 이제 플래그와 패턴에 대해서 알아봤으니 본격적으로 `RegExp` 메서드에 대해 알아보자. <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/RegExp'>MDN</a>에 적혀있듯이 메서드도 여러개 있지만, 여기서는 `exec`, `match`, `test`정도만 알아보자. 
+
+1. `exec`: 매칭 결과를 배열로 반환한다. 매칭 결과가 없는 경우 `null`로 반환한다. 특이사항으로는 `g` 플래그를 사용하더라도 첫 번째 매칭 결과만 반환한다.
+
+```javascript
+let target = "is";
+let str = "what is your name? my name is ywtechit";
+
+console.log(/is/g.exec(target));
+👉🏽 [ 'is', index: 0, input: 'is', groups: undefined ]
+```
+
+2. `match`: 주어진 문자열에 대해 일치하는 결과를 반환한다. `exec` 메서드와는 다르게 `g` 플래그를 지정하면 모든 매칭 결과를 배열로 반환한다.
+
+```javascript
+// ex1: 문자 'p'의 개수를 return 하시오
+let lyrics = "i have a pen pineapple apple pen";
+let reg = lyrics.match(/p/g) // [ 'p', 'p', 'p', 'p', 'p', 'p', 'p' ]
+console.log(reg.length)
+👉🏽 7  // 배열의 길이가 곧 `p`의 개수와 동일하다.
+
+let target = "what is your name? my name is ywtechit";
+
+// ex2: is 값을 한번만 찾기
+console.log(target.match(/is/));
+👉🏽 [ 'is', index: 5, input: 'what is your name? my name is ywtechit', groups: undefined ]
+
+// ex3: is 값을 모두 찾기
+console.log(target.match(/is/g));
+👉🏽 [ 'is', 'is' ]
+
+// ex4: A가 2번이상 반복하는 문자열을 반환하기
+const target = "A AA B BB Aa Bb AAA";
+const regExp = /A{2,}/g;
+const result = target.match(regExp)
+console.log('result :>> ', result);  // [ "AA", "AAA" ]
+
+// ex5: URL 제일 마지막 값만 추출하는 정규표현식
+const url = "https://swtrack.elice.io/courses/16306/lecturerooms/16157";
+const reg = url.match(/\/([0-9]+)$/);
+
+console.log(reg);
+👉🏽
+[
+  0: '/16157',
+  1: '16157',
+  2: index: 51,
+  3: input: 'https://swtrack.elice.io/courses/16306/lecturerooms/16157',
+  4: groups: undefined
+]
+
+// ex6: URL에 포함된 특정 문자 분리하기
+let reg = s.match(/\/(lecturerooms)\/([0-9]+$)/);
+console.log(reg);
+👉🏽
+[
+	0: "/lecturerooms/16157"
+	1: "lecturerooms"
+	2: "16157"
+	groups: undefined
+	index: 38
+	input: "https://swtrack.elice.io/courses/16306/lecturerooms/16157"
+	length: 3
+]
+
+// ex7: 문자의 내용과 상관없이 3자리 문자열과 매치하기
+let target = "Is this your mac? Is this your phone?";
+console.log(target.match(/.../g));
+👉🏽
+[
+  'Is ', 'thi', 's y',
+  'our', ' ma', 'c? ',
+  'Is ', 'thi', 's y',
+  'our', ' ph', 'one'
+]
+```
+
+3. `test`: 매칭결과를 불리언(boolean)값으로 반환한다. 지금까지 이 메서드를 제일 많이 사용했다. 여담으로 올바른 이메일 형식인지 검사하는 공식 패턴(FC 5322 Official Standard)은 <a href='https://emailregex.com/'>emailregex.com</a>에서도 확인 할 수 있다.
+
+```javascript
+// ex1: 해당 문자열이 있는지 검사하기
+let target = "what is your name? my name is ywtechit";
+
+console.log(/is/.test(target));  // true
+
+console.log(/typescript/.test(target));  // false
+
+// ex2: new 연산자를 사용한 RegExp와 new 연산자를 사용하지 않은 RegExp
+const str = 'table football';
+const regex = new RegExp('foo*');
+const sameRegex = /foo*/;
+const globalRegex = new RegExp('foo*', 'g');
+
+console.log(regex.test(str));  // true
+
+console.log(globalRegex.lastIndex);  // 0
+
+console.log(globalRegex.test(str));  // true
+
+console.log(globalRegex.lastIndex);  // 9
+
+console.log(globalRegex.test(str));  // false
+
+// ex3: 올바른 전화번호 형식인지 판별하는 패턴
+const tel = "010-1234-1234"
+const regExp = /^\d{3}-\d{4}-\d{4}$/;
+const result = regExp.test(tel);
+console.log('result :>> ', result);  // true
+
+// ex4: http://, https://로 시작하는 도메인인지 판별하는 패턴
+const domain = "https://www.naver.com";
+const regExp = /^(http|https):\/\//;
+const regExp2 = /^https?:\/\//;
+const result = regExp.test(domain);
+console.log('result :>> ', result);  // true
+
+// ex5: html로 끝나는 파일명인지 판별하는 패턴
+const string = "index.html";
+const regExp = /html$/
+const result = regExp.test(string)
+console.log('result :>> ', result);  // true
+
+// ex6: 소수점을 최대 2번까지만 사용하는 입력인가?
+const isUptoTwoDecimalPoint = (input: string): boolean => {
+  const isIncludeDot = /[.]/g;
+
+  if (isIncludeDot.test(input)) {
+    const isTwoDecimalPoint = /^\d+[.]\d{1,2}$/;
+    if (isTwoDecimalPoint.test(input)) return true;
+    return false;
+  }
+  return true;
+};
+
+// ex7: 하나 이상의 공백으로 시작하는가?
+const string = " Hi!!";
+const regExp = /^[\s]+/
+const result = regExp.test(string)
+console.log('result :>> ', result);  // true
+
+// ex8: 알파벳 대소문자 또는 숫자로 시작하고 끝나며 4~10자리인가?
+const string = "abcd8637";
+const regExp = /^[\w]{4,10}$/
+const result = regExp.test(string)
+console.log('result :>> ', result);  // true
+
+// ex9: 올바른 이메일 형식인가?
+const string = "ywtechit@gmail.com";
+const regExp = /^[\w]([-_\.]?[\w])*@[\w]([-_\.]?[\w])*\.[a-zA-Z]{2,3}$/
+const result = regExp.test(string)
+console.log('result :>> ', result);  // true ​​​​​at
+
+// General Email Regex (RFC 5322 Official Standard)
+const regExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+// HTML5 input 태그의 type=”email”에 사용되는 패턴(from W3C: Ref 5.)
+<input type="email" placeholder="Enter your email" />
+const regExp = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+
+// ex10: 특수문자 판별하기
+let s = "(A(BC)D)EF(G(H)(IJ)K)LM(N)";
+let answer = "";
+
+console.log(solution(s));
+
+function solution(s) {
+  for (let x of s) {
+    if (/[A-Z]/.test(x)) answer+=x;
+  }
+  return answer;
+}
+
+👉🏽 ABCDEFGHIJKLMN
+```
+
+4. `replace`: 주어진 문자열내에 일치를 새로운 문자열로 대치하는 메소드
+
+```javascript
+// ex1: 공백 제거하기
+const str =
+  "나랏말싸미 듕귁에 달아문자와로 서르 사맛디 아니할쎄 이런 전차로 어린 백셩이 니르고져 홇베이셔도 마참네 제 뜨들 시러펴디 몯핧 노미하니아 내 이랄 윙하야 어엿비너겨 새로 스믈 여듫 짜랄 맹가노니사람마다 해여 수비니겨 날로 쑤메 뻔한킈 하고져 할따라미니라";
+const result = str.replace(/\s/g, "")
+
+console.log('result :>> ', result);
+👉🏽 나랏말싸미듕귁에달아문자와로서르사맛디아니할쎄이런전차로어린백셩이니르고져홇베이셔도마참네제뜨들시러펴디몯핧노미하니아내이랄윙하야어엿비너겨새로스믈여듫짜랄맹가노니사람마다해여수비니겨날로쑤메뻔한킈하고져할따라미니라
+
+// ex2: 특수문자 제거하기
+let s = "found7, time: study; Yduts; emit, 7Dnuof";
+let notIncludeSpecialCharacter = s.replace(/[^A-z]/g, '');
+👉🏽 foundtimestudyYdutsemitDnuof
+
+// ex3: 특수문자 중에서 공백은 살리고 싶을 때
+let notIncludeSpecialCharacter = s.replace(/[^A-z | " "]/g, '');
+👉🏽 found time study yduts emit dnuof
+```
+
+Reference
+1. https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+2. https://ko.javascript.info/regexp-introduction
+3. https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=251552545
+4. https://emailregex.com/
+5. https://html.spec.whatwg.org/multipage/input.html#input.email.attrs.value.multiple
