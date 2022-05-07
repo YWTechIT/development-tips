@@ -744,3 +744,20 @@ Reference
 3. https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=251552545
 4. https://emailregex.com/
 5. https://html.spec.whatwg.org/multipage/input.html#input.email.attrs.value.multiple
+
+---
+### 📍 terminal에서 npm private 패키지를 다운받을 수 없을 때
+`React`에서 `npm i`를 통해 필요한 패키지를 다운받으려는데 `Not found` 에러가 뜨면서 정상적으로 찾지 못했다. 그래서 <a href='https://www.npmjs.com/'>npm.js</a>에 들어가보니 하단의 사진처럼 패키지가 정상적으로 등록은 되어있었다.
+
+![](https://velog.velcdn.com/images/abcd8637/post/5008b76f-dc51-4a41-84b0-089373522388/image.png)
+
+결국, `terminal`에서 `npm login`을 하지 않아서 패키지를 다운받지 못한 것이었는데, 생각해보니 `private`한 패키지를 현재 요청하는 사용자의 권한이 있는지도 확인하지 않은 채 다운로드 받을 수 있다면 패키지를 `private`로 설정한것이 무슨 소용이 있을까라는 생각이 들었다. `npm login` 커맨드 입력 후 자신의 <a href='https://www.npmjs.com/'>npm.js</a>계정을 입력하면 `Logged in as <id>`커맨드가 뜨는데 정상적으로 `terminal`에 `npm` 계정이 등록된 것을 확인 할 수 있다.
+
+![](https://velog.velcdn.com/images/abcd8637/post/44b75373-9873-44c3-b478-92efe0f09883/image.png)
+
+`terminal`에 자신의 계정이 성공적으로 등록됐는지 확인하려면 `npm whoami`명령어로 확인하자.
+
+![](https://velog.velcdn.com/images/abcd8637/post/9b2ee914-0a26-4a97-b8d5-e01ea5f42cac/image.png)
+
+Referenced
+1. https://docs.w3cub.com/npm/getting-started/installing-node.html
