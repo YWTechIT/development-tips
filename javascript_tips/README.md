@@ -1,3 +1,41 @@
+## 📍 npm과 caret, tilde, 패키지 설치하는 방법 알아보기
+`npm`은 자바스크립트 패키지 매니저다. `Node.js`에서 사용할 수 있는 모듈들을 패키지화해서 모아둔 저장소 역할과 패키지 설치 및 관리를 위한 `CLI(Command line Interface)`를 제공한다. 자신이 작성한 패키지를 공개할 수도 있고, 필요한 패키지를 검색하여 재사용할 수도 있다.
+
+내가 다니는 회사에서는 `npm` 패키지를 직접 만들어 사용하고 관리한다.(<a href='https://www.npmjs.com/~triple-corp'>npm 패키지 보러가기</a>) 취업준비할 때 프로젝트를 하면 항상 `패키지 === 가져다 쓰는 것`이라고 생각했는데, 직접 패키지를 만들고 버전을 관리해야 하다보니 까다로운 것이 한둘이 아니었다. 그래서 패키지 버전의 기본적인 내용들을 현업에 적용할 때 까먹지 않기 위해 글을 남긴다. 우리가 프로젝트를 만질 때 `package.json`에 패키지를 설치하는데, 이때 패키지에는 다음처럼 버전이 명시되어있다.
+
+```javascript
+// package.json
+"typescript": "3.8.3"
+"lint-staged": "^8.1.1",
+"nodemon": "~1.19.1",
+```
+
+예를 들어, `typescript`의 경우에는 `3.8.3`이라고 명시되어있는데 이러한 숫자를 `semantic versioning`이라고 부른다. 버전의 왼쪽부터 차례대로 주(主) 버전(Major), 부(部) 버전(Minor), 수(修) 버전(Patch)라고 부른다. `Major`는 기존 버전과 호환되지 않게 API가 바뀌면 변경되고, 기존 버전과 호환되면서 새로운 기능을 추가할 때는 `Minor`를 올리고, 기존 버전과 호환되면서 버그를 수정한 것이라면 `Patch`를 올린다. 
+
+![](https://velog.velcdn.com/images/abcd8637/post/afbd85bf-3e75-42c9-bf81-9027b55147ee/image.jpeg)
+
+상단 `codeBlock`에 패키지 버전을 보면 단순히 숫자만 붙여있는게 아니라 숫자 앞에 `^` 혹은 `~`가 붙어있는데, `^`는 `caret(캐럿)`이라 부르고, 물결표시인 `~`는 `tilde(틸드)`라고 부른다. 이들은 각각 특징이 있는데 `^`는 `Compatible with version`을 뜻하며 나중에 업데이트를 하더라도 `major`값이 변하지 않는 최대 버전을 설치하게 된다. 예를 들어 `"lint-staged": "^8.1.1"` 패키지를 업데이트 하게되면 `major`값이 변하지 않는 최신 버전인 `8.2.1`을 내려받게 된다. 이를 위해 간단한 실험을 진행했는데, `npm init -y`로 `package.json`을 만들고 `npm i lint-stages@8.1.1`로 `8.1.1`버전의 패키지를 다운받고나서 `npm i lint-stages`를 진행하니 `8.2.1`버전을 받았다. 이를 통해 패키지를 업데이트하게 되면 `^`은 해당 `major`를 제외한 버전의 최신 버전을 다운받는다는 점을 알 수 있었다. 
+
+![](https://velog.velcdn.com/images/abcd8637/post/a6ce9f9b-1d34-447e-8d93-b4d94f782e94/image.png)
+
+![](https://velog.velcdn.com/images/abcd8637/post/b4241f5c-ac4f-4461-a5ac-e50aeeb48938/image.png)
+
+다음으로 `~`는 `tilde(틸드)`는 `Approximately equivalent to version`을 뜻하며, 패키지 버전 설치 명령어를 어디까지 입력했는지에 따라 다르다. 예를들어 `npm i nodemon@~1`이라고 작성하면 버전을 `major`까지만 명시했기 때문에 `minor`와 `patch` 변경을 허용한다. 그래서 하단 사진처럼 `major`는 1이고 나머지는 최신버전을 다운받는다. 이는 `1.x.x`와 같다.
+
+![](https://velog.velcdn.com/images/abcd8637/post/7a425b18-09b1-4cee-956d-4c873cdbe3bf/image.png)
+
+같은 방법으로 `npm i nodemon@~1.10`을 다운받으면 `patch`변경을 허용 할 것이고, 이는 `1.10.x`와 같다.
+
+여담으로 `^` 혹은 `~`를 붙이지 않기 위해 `npm install nodemon@1.10.1`을 입력하고 `package.json`을 보면 자동으로 caret이 붙여있는데, 이는 `npm save-prefix`가 기본적으로 `^`으로 설정되어있기 때문이다. 만약, default값을 `^` 대신 `--save-exact`나 `~`로 바꾸고 싶다면 `npm config set save-prefix '--save-exact'` 혹은 `npm config set save-prefix '~'`으로 변경하면 된다. 변경된 내용은 `npm config set ls -l` 명령어에서 `save-prefix` 키 값에서도 확인 할 수 있다. 또한, `npm config`를 건들지않고 명령어를 사용하여 정확한 버전을 받고 싶다면 `npm i --save-exact <package>@<version>`을 입력하면 된다.
+
+Reference
+1. https://poiemaweb.com/nodejs-npm
+2. https://docs.npmjs.com/about-semantic-versioning
+3. https://semver.org/lang/ko/
+4. https://stackoverflow.com/questions/22343224/whats-the-difference-between-tilde-and-caret-in-package-json
+5. https://bytearcher.com/goodies/semantic-versioning-cheatsheet/
+
+---
 ## 📍 Call by Value, Call by reference, Call by sharing
 
 CS 공부를 하며 `Call by Value, Call by Reference`에 대해서 배우고 있는데, 헷갈리는 글들이 많았다. 결론적으로 `JS`에서는 `Call by reference, Call by sharing` 두 용어보다 `Call by Value` 용어를 사용하는 편이 알맞다. 다음 예시를 들어보자.
