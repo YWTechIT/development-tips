@@ -172,6 +172,8 @@ export default function Subscription() {
 }
 ```
 
+![](https://velog.velcdn.com/images/abcd8637/post/09e69e6f-01b7-49a8-bfb5-adb3cf3af32d/image.gif)
+
 ---
 ## 📍 interface, type 사용하기
 
