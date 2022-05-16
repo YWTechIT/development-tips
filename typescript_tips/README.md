@@ -1,5 +1,178 @@
 # typescript_tips
 
+## 📍 2개 이상의 동일한 기능인 useState와 handleChange를 각각 하나로 관리하기
+구독신청 페이지를 만들면서 개인정보수집 checkbox와 광고성 정보 수신 `input checkbox`를 `useState`로 관리하려고 하는데, 한 줄씩 `useState`로 선언하여 관리하니까 코드가 불필요하게 길어져 좋은 코드라고 보기 힘들었다. 그래서 기존에 `const [state, setState] = useState(false)`처럼 선언했다면 이를 `object`로 묶어 선언하니 코드가 줄어들었다. 
+
+```typescript
+import { useState } from "react";
+
+// 리팩토링 전
+export default function Subscription() {
+  const [allAgree, setAllAgree] = useState<boolean>(false);
+  const [privateAgree, setPrivateAgree] = useState<boolean>(false);
+  const [adAgree, setAdAgree] = useState<boolean>(false);
+}
+
+
+// 리팩토링 후
+interface AgreeType {
+  personalInfo: boolean;
+  adInfo: boolean;
+}
+
+export default function Subscription() {
+  const [{ personalInfo, adInfo }, setAgree] = useState<AgreeType>({
+    personalInfo: false,
+    adInfo: false,
+  });
+}
+```
+
+또한, `checkbox`의 `state`를 변경하기 위해 `setAgree`의 값을 변경해야하는데, 리팩토링 전에는 `allAgree`만을 위한 `allHandleChange`를 만들었고, 나머지 `privateAgree`, `adAgree`를 위한 `handleChange` 함수를 만들었는데, 마찬가지로 변수명만 다를뿐 동일한 역할을 하는데도 함수를 2개 이상 관리해야하기 때문에 가독성이 매우 좋지 않았고, 함수 1개로 관리하기 위해 `input`의 `id`값으로 조건을 구분하여 `check`를 `toggle` 할 수 있게 설정했다. 그리고 `전체 동의합니다` 기능은 해당 `input`의 `checked` property에 `personalInfo`, `adInfo`가 참일 때만 `checked`가 될 수 있게 설정했다. 이때 가독성을 위해 모두 동의 했을 때의 조건을 `const checkedAllInfo = personalInfo && adInfo` 변수로 관리했다. 여담으로 66번 라인을 `else`로 처리 할 수 있지 않는가라고 생각할 수 있지만, 7번 라인에 `AgreeType`타입을 정의해놓았기 때문에 `else` 조건에 `personalInfo` 혹은 `adInfo` 외에 다른 `id`가 온다면 타입스크립트에서 제대로 처리 할 수 없다. 만약, `else`를 넣고 싶다면 7번라인에 `AgreeType`에 `[key in string]: boolean`을 넣어 다른 `id`가 오더라도 그 `id`가 `boolean` 타입이라고 정의하면 된다.
+
+```typescript
+import { useState } from "react";
+
+// 리팩토링 전
+export default function Subscription() {
+  const [allAgree, setAllAgree] = useState<boolean>(false);
+  const [privateAgree, setPrivateAgree] = useState<boolean>(false);
+  const [adAgree, setAdAgree] = useState<boolean>(false);
+
+  const allHandleChange = () => {
+    if (allAgree) {
+      setAllAgree(false);
+      setPrivateAgree(false);
+      setAdAgree(false);
+    } else {
+      setAllAgree(true);
+      setPrivateAgree(true);
+      setAdAgree(true);
+    }
+  };
+
+  const handleChange = (
+    setState: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
+    setState((state) => !state);
+  };
+
+  return (
+    <>
+      <Section centered margin={{ top: 60 }}>
+        <label htmlFor="agree-all">
+          <input
+            id="agree-all"
+            type="checkbox"
+            checked={allAgree}
+            onChange={allHandleChange}
+          />
+          전체 동의합니다.
+        </label>
+
+        <label htmlFor="agree-private">
+          <input
+            id="agree-private"
+            type="checkbox"
+            checked={privateAgree}
+            onChange={() => handleChange(setPrivateAgree)}
+          />
+          개인정보 수집 및 이용에 동의합니다. (필수)
+        </label>
+
+        <label htmlFor="agree-advertise">
+          <input
+            id="agree-advertise"
+            type="checkbox"
+            checked={adAgree}
+            onChange={() => handleChange(setAdAgree)}
+          />
+          광고성 정보 수신에 동의합니다. (필수)
+        </label>
+
+        <Button disabled={!(privateAgree && adAgree)}>구독하기</Button>
+      </Section>
+    </>
+  );
+}
+
+// 리팩토링 후 
+interface AgreeType {
+  personalInfo: boolean;
+  adInfo: boolean;
+}
+
+export default function Subscription() {
+  const [{ personalInfo, adInfo }, setAgree] = useState<AgreeType>({
+    personalInfo: false,
+    adInfo: false,
+  });
+  const checkedAllInfo = personalInfo && adInfo;
+
+  const handleChange = (e: { target: HTMLInputElement }) => {
+    const { id, checked } = e.target;
+
+    if (id === "all") {
+      checked
+        ? setAgree(() => ({
+            personalInfo: true,
+            adInfo: true,
+          }))
+        : setAgree(() => ({
+            personalInfo: false,
+            adInfo: false,
+          }));
+    } else if (id === "personalInfo" || id === "adInfo") {
+      setAgree((state) => ({
+        ...state,
+        [id]: !state[id],
+      }));
+    }
+  };
+
+  return (
+    <>
+      <Section centered margin={{ top: 60 }}>
+        <label htmlFor="all">
+          <input
+            id="all"
+            type="checkbox"
+            checked={personalInfo && adInfo}
+            onChange={handleChange}
+          />
+          <Text size={17} bold>
+            전체 동의합니다.
+          </Text>
+        </label>
+
+        <label htmlFor="personalInfo">
+          <input
+            id="personalInfo"
+            type="checkbox"
+            checked={personalInfo}
+            onChange={handleChange}
+          />
+          <Text size="medium">개인정보 수집 및 이용에 동의합니다. (필수)</Text>
+        </label>
+
+        <label htmlFor="adInfo">
+          <input
+            id="adInfo"
+            type="checkbox"
+            checked={adInfo}
+            onChange={handleChange}
+          />
+          <Text size="medium">광고성 정보 수신에 동의합니다. (필수)</Text>
+        </label>
+
+        <Button disabled={!checkedAllInfo}>구독하기</Button>
+      </Section>
+    </>
+  );
+}
+```
+
+---
 ## 📍 interface, type 사용하기
 
 ```ts
