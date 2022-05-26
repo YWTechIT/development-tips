@@ -1,5 +1,159 @@
 # typescript_tips
 
+## 📍 Formik으로 input state 쉽게 관리하기
+<a href='https://ywtechit.tistory.com/475'>이전 글</a>에서 2개 이상의 `useState`를 하나로 묶어 `input`을 구현했었다. 그런데, `input`이 필요 할 때마다 `useState`로 생성하여 관리하고, 타입이 여러가지일 때 매번 그에 맞는 `handleChange`를 구현하는것은 상당히 번거롭다고 생각했다. 다른 개발자들도 이미 같은 생각을 했는지, 관련 라이브러리가 이미 존재하고 있었다. <a href='https://formik.org/docs/overview'>Formik</a>과 <a href='https://react-hook-form.com/'>React Hook Form</a> 라이브러리인데, 오늘은 `Formik`에 대해서 자세하게 알아보자. `Formik`은 `React`에서 `Form`을 구현할 때 가장 성가신 세 가지를 도와주는 라이브러리이다. 
+
+```
+1. 양식 상태 안팎에서 값 가져오기
+2. 유효성 검사 및 오류 메시지
+3. 양식 제출 처리
+```
+
+위의 모든 경우의 코드를 한곳에 배치함으로써 테스트와 리팩토링, 추론을 쉽게 할 수 있다고 공식문서에 나와있다. (By colocating all of the above in one place, Formik will keep things organized--making testing, refactoring, and reasoning about your forms a breeze.
+) 결론적으로 내가 `Formik`을 사용하면서 가장 편하게 생각했던 점은 이전엔 `useState` 타입에 따라 `handleChange` 함수를 따로 생성해야하는 번거로움이 있었는데, `Formik`에서 제공하는 `handleChange`를 사용하면 함수를 따로 구현하지 않아도 해당 기능을 사용할 수 있다. 추가로 `handleBlur`, `handleSubmit`과 같은 함수도 자체적으로 제공하니 매번 함수를 작성하는 것보다 전체 코드가 줄어드는 상당한 이점이 있었다. 또한 `유효성(Validation)` 검사도 진행 할 수 있는데, `form` 형식을 제출 할 때 필수로 입력해야 하는 `input`이나, 구체적인 `minLength`, `maxLength` 글자 수를 정할 수도 있고, 정규 표현식으로 유효성 검사(`input` 값이 이메일 형식인지 아닌지)도 할 수 있다. 그리고 입력을 완료 한 후에 필드의 오류여부를 확인하게 도와주는 `errors` 기능, `form`을 만졌는지 확인하는 `touched`기능 등이 있다.
+
+앞서 `Formik`에서는 `유효성(Validation)` 검사도 할 수 있다고 언급했는데, `Yup` 라이브러리를 통해 객체 스키마 유효성 검사를 진행 할 수 있다. <a href='https://formik.org/docs/tutorial#schema-validation-with-yup'>공식문서</a>에도 나와있듯이 유효성검사를 위해 `Yup`을 반드시 사용해야하는 것은 아니다(Yup is 100% optional.) 하지만, `Yup`을 사용하면 짧은 코드로도 정확하게 유효성 검사 기능을 사용할 수 있는 장점이있다. 짧은 코드는 가독성을 증가시켜주고 이는 협업시 생산성을 증가시키는 요소가 된다.
+
+`Formik`의 기본적인 사용 방법은 <a href='https://formik.org/docs/overview#the-gist'>Getting Started</a>에도 나와 있지만, 내가 직접 마주했던 코드의 전/후 상태를 보면서 설명하는 것이 아무래도 기억에 오래 남을것 같아 코드를 일부 수정하여 가져왔다.
+
+아래 코드블럭은 `Formik` 라이브러리를 사용하기 전의 코드이다. 아마 `React`를 사용하는 개발자들에겐 익숙한 코드이지 않을까 싶다. 코드를 대략적으로 설명하자면, `userEmail`과 `userName` 모두 `string` 타입이라 하나의 `useState`에 묶어서 선언했고, `personalInfo`, `adInfo` 모두 `boolean` 타입이라 마찬가지로 하나의 `useState`에 선언했다. 그리고 `handleInput`은 `string`이 변하는 값을 추적하는 함수이고, `handlePartTerms`는 `boolean` 타입이 변하는 값을 추적하는 함수, `handleTotalTerms`는 `boolean` 값을 한번에 모두 바꿔주는 함수이다. 크게보면 `handlePartTerms`와 `handleTotalTerms`의 성격이 같아 묶어서 선언할 수도 있지만 폼의 필드를 직접 수정하는 것과 더 위쪽 레이어에서 수정하는 것이 차이라는 관점에서 보면 나누는 편이 좋을 것 같아 핸들러를 따로 정의했다. 마지막으로 `handleSubmit`은 `form`에서 제출 할 때 실행되는 함수이다. 지금 작성한 코드보다 더욱 깔끔하게 작성 할 수 있는 방법은 무궁무진하지만, 현재 상태에서는 핸들러 코드가 많아 가독성이 떨어진다고 생각이든다.
+
+```javascript
+export default function WithoutFormik() {
+  const [{ userEmail, userName }, setInput] = useState<InputType>({
+    userEmail: '',
+    userName: '',
+  })
+  const [{ personalInfo, adInfo }, setAgree] = useState<AgreeType>({
+    personalInfo: false,
+    adInfo: false,
+  })
+
+  const handleInput = (e: SyntheticEvent) => {
+    const { id, value } = e.target as HTMLInputElement
+    setInput((prevState) => ({ ...prevState, [id]: value }))
+  }
+
+  const handlePartTerms = (e: { target: HTMLInputElement }) => {
+    const { id } = e.target
+
+    setAgree((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id],
+    }))
+  }
+
+  const handleTotalTerms = (e: { target: HTMLInputElement }) => {
+    const { checked } = e.target
+
+    setAgree(
+      checked
+        ? {
+            personalInfo: true,
+            adInfo: true,
+          }
+        : {
+            personalInfo: false,
+            adInfo: false,
+          },
+    )
+  }
+
+  const handleSubmit = async () => {
+    await applyServer({
+      userEmail,
+      userName,
+      personalInfo,
+      adInfo
+    })
+  }
+
+  return(
+    <>
+      <Template />
+    </>
+  )
+}
+```
+
+그렇다면, `Formik` 라이브러리를 사용한 코드는 어떻게 작성했는지 살펴보자. 하단 코드블럭을 보면 한눈에 봐도 코드가 많이 줄어든 것이 보이지 않는가? 또한, 군데군데 흩어져 있던 코드가 한곳에 모여 선언되어있으니 가독성도 많이 좋아졌다. 그리고 이전 코드에서는 유효성 검사 코드를 넣지 않았는데, 여기선 `validationSchema`이라는 유효성 검사 코드까지 같이 넣었다.(`Yup` 라이브러리로 사용했다.) `Formik`의 장점은 `handleChange` 핸들러를 타입별(`string`, `boolean`)로 따로 정의하지 않아도 `handleChange` 하나로 재사용 할 수 있다는 점과 유효성 검사를 진행할 때 `isValid`를 사용하여 유효성 검사가 모두 통과하지 않으면(이때는 `isValid`가 `false`가 된다.) `button`을 `disabled`로 만들 수 있다. 추가로 `input`의 최소 / 최대 길이까지 선언하여 해당 범위를 벗어나면 에러메시지도 띄울 수 있다. 그리고 `errors` 객체로 `validationSchema`의 유효성 검사가 통과하지 않았을 때 해당 메세지도 보여줄 수 있다. 마지막으로 `form`을 제출하고 응답이 오기전까지 `button`을 `disabled`로 만드는 `isSubmitting`까지 별도의 로직 선언없이 사용할 수 있는 점이 마음에 들었다.
+
+```javascript
+export default function WithFormik() {
+  const {
+    values,
+    errors,
+    isValid,
+    isSubmitting,
+    setValues,
+    handleChange,
+    handleSubmit,
+  } = useFormik({
+    initialValues: {
+      userEmail: '',
+      userName: '',
+      personalInfo: false,
+      adInfo: false,
+    },
+    validationSchema: Yup.object({
+      userEmail: Yup.string()
+        .email('이메일 형식이 아닙니다.')
+        .required('이메일을 입력해 주세요.'),
+      userName: Yup.string().required('닉네임을 입력해 주세요.'),
+      personalInfo: Yup.bool().isTrue('개인정보 수집에 동의해주세요.'),
+      adInfo: Yup.bool().isTrue('광고성 정보 수신에 동의해주세요.'),
+    }),
+    onSubmit: async ({email, nickname, personalInfo, adInfo}) => {
+      await applyServer({
+        email,
+        nickname,
+        personalInfo,
+        adInfo,
+      })
+    },
+  })
+
+  const { userEmail, userName, personalInfo, adInfo } = values
+  const isActive = isValid && !isSubmitting
+
+  const allTermsHandleChange = () => {
+    void setValues(
+      checkedAllTerms
+        ? {
+            userEmail,
+            userName,
+            personalInfo: false,
+            adInfo: false,
+          }
+        : {
+            userEmail,
+            userName,
+            personalInfo: true,
+            adInfo: true,
+          },
+    )
+  }
+
+  return(
+    <>
+      <Template />
+    </>
+  )
+}
+```
+
+이밖에도 `React Context`와 동일하게 사용가능한 `useFormikContext`, `form`태그에 `handleSubmit`을 사용하지 않아도 되는 `<Form />`, `input` 태그에 `handleChange`를 사용하지 않아도 되는 `<Field />`태그 등 다양한 기능이 있다. 그러나, `Formik`에도 단점은 존재한다. 정해진 태그를 사용해야하는 점, 복잡한 `form`을 다루기가 어렵고 내가 원하는대로 커스텀하기가 일반적인 `form`에 비해 조금은 불편하다는 점. 그러나, 이런 단점을 극복할 수 있는 장점(`input` 로직을 일일이 구현하기 귀찮거나 협업할 때 등)이 더 많기 때문에 한번쯤 `Formik`을 사용하는 것을 권하며 이 글을 마친다.   
+
+Reference
+1. https://formik.org/docs/overview
+2. https://github.com/jquense/yup
+3. https://formik.org/docs/overview#the-gist
+4. https://formik.org/docs/migrating-v2#isvalid
+5. https://formik.org/docs/api/form
+6. https://formik.org/docs/api/field
+7. https://react-hook-form.com/
+
+---
 ## 📍 2개 이상의 동일한 기능인 useState와 handleChange를 각각 하나로 관리하기
 구독신청 페이지를 만들면서 개인정보수집 checkbox와 광고성 정보 수신 `input checkbox`를 `useState`로 관리하려고 하는데, 한 줄씩 `useState`로 선언하여 관리하니까 코드가 불필요하게 길어져 좋은 코드라고 보기 힘들었다. 그래서 기존에 `const [state, setState] = useState(false)`처럼 선언했다면 이를 `object`로 묶어 선언하니 코드가 줄어들었다. 
 
