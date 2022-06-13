@@ -1,3 +1,26 @@
+## 📍 npm install 후 package-lock.json의 diff가 많을 때
+내가 담당한 `repository`를 작업하기 전에, 터미널에 `npm install`으로 해당 `project`를 실행하기 위해 필요한 패키지를 설치하는 도중 `VSCode`의 `Source Control - Changes`에서 `main` 브랜치의 `package-lock.json`의 코드와 다르게 `diff`가 엄청 많이 생기면서 `npm run dev`를 실행하면 오류가 뜨면서 정상적으로 `local` 환경 실행이 안되는 경우가 있었다.
+
+![](https://velog.velcdn.com/images/abcd8637/post/1e2defd0-55ec-4213-bcbf-ba265974c984/image.png)
+
+`main` 브랜치의 `package-lock.json`과 다른것도 없는데 갑자기 `diff`가 많이 생겨서 당황했지만, 침착을 유지하며 구글링을 한 결과 원인은 `npm`이 항상 `package-lock.json`에서 가능한 모든 데이터를 가져오려고 시도하는 특징 때문에 생긴 문제였다. 프로젝트 파일 중 `package-lock.json`을 잘 들여다보면 3번째 줄에 `lockfileVersion`이란 코드가 있는데, 이는 `document`의 체계적인 버전을 나타내는 코드이다. 
+
+`lockfileVersion`은 `npm`의 버전에 따라 1과 2로 나뉜다. `npm v5` ~ `npm v6`는 1이 사용되고, `npm v7`이상은 2가 사용된다. (여담으로 `lockfileVersion` 버전 3도 있는데, 이는 `npm v7`이상에서 `node_modules/.package-lock.json`의 숨겨진 잠금 파일에 사용된다. 만약, 현재 패키지가 `npm v6`에 대한 지원이 없다면 향후 버전에서 사용 될 가능성이 높다.) 결론적으로 문제 원인은 `lockfileVersion`이 2에서 1로 낮아지면서 생긴 문제인데, 당시 나의 로컬 환경의 `npm` version은 `6.14.7`이었고, `node` version은 `14.8.0`이었다. (`npm` 버전을 확인하려면 `npm -v`를, `node`의 버전을 확인하려면 `node -v`를 입력하자.)
+
+하지만, 이전까지 나는 `npm`의 버전을 강제로 낮춘적이 없었었는데 왜 `downgrade`가 됐는지 곰곰이 생각해보니 `legacy` 프로젝트를 실행시킬 때 최신 `node` version 지원이 안되어서 `nvm`으로 `node` version을 강제로 낮추었더니 해당 `node` version에 호환되는 `npm` version으로 바뀌었기 때문이다. 이후 삽질해보며 알게된 사실인데 `node-version`과 호환되는 `npm` 버전이 있었다. (Reference 2번 참고)
+
+결론적으로 <a href='https://nodejs.org/ko/'>nodejs.org</a>에 접속하여 node.js에서 제공하는 안정적인 노드 버전인 `16.15.1 LTS`를 설치하고, 해당 노드버전과 호환되는 `npm` 버전인 `8.11.0`을 설치하고나서 `npm install`을 하니까 `package-lock.json`의 `diff`가 없이 정상적으로 실행되었다.
+
+터미널 명령어는 `nvm ls -remote`로 지원되는 노드 버전을 확인하고, `nvm install 16.15.1`로 해당 노드 버전을 `nvm`에 설치하고,(`nvm`이 없다면 설치하는 방법을 구글에 찾아보자.) `npm use 16.15.1`로 노드 버전을 적용시키고, 마지막 `npm install -g npm@8.11.0`으로 `npm`의 버전을 맞춰주었다.
+
+이렇게 또 하나의 문제를 해결했다. 혹시라도 나와 같은 문제로 고생하고 있는 다른 분들에게 도움이 되었으면 좋겠는 생각을 하며 글을 마친다.
+
+Reference
+1. https://docs.npmjs.com/cli/v8/configuring-npm/package-lock-json
+2. https://nodejs.org/ko/download/releases/
+3. https://nodejs.org/ko/
+
+---
 ## 📍 npm과 caret, tilde, 패키지 설치하는 방법 알아보기
 `npm`은 자바스크립트 패키지 매니저다. `Node.js`에서 사용할 수 있는 모듈들을 패키지화해서 모아둔 저장소 역할과 패키지 설치 및 관리를 위한 `CLI(Command line Interface)`를 제공한다. 자신이 작성한 패키지를 공개할 수도 있고, 필요한 패키지를 검색하여 재사용할 수도 있다.
 
