@@ -1,5 +1,54 @@
 # typescript_tips
 
+## 📍 비구조할당문법에 type 선언하기
+코드의 가독성을 높이기 위해 객체나 배열로 된 변수에 비구조화할당 문법(destructuring assignment)을 사용할 때가 자주 있다. `typescript`로 비구조화할당 문법을 사용하면 변수로 꺼낸 값에 타입을 정해주는 경우를 마주하는데 `object`형은 가끔 타입을 어떻게 정해야하는지 헷갈리곤 한다. 이번 글은 거창한 글보단 미세먼지처럼 작은 팁이지만 종종 헷갈릴 때 도움이 되므로 가벼운 마음으로 읽어보자.
+
+하단 코드블록에 나와있듯이 `user`를 구조분해할당 이후 타입을 잘못 선언하는 경우는 `AS-IS`처럼 사용한다. 하지만, 저 문법은 타입을 정해주는 문법이 아니라, 객체의 원래 속성명을 다른 이름으로 할당하는 문법이다. 여기선 `string`으로 바꾼다는 의미다. 본래 의도라면 `TO-BE`처럼 선언해야 `firstname`과 `lastname`에 타입선언이 된다.
+
+```typescript
+const user = { firstname: 'ted', lastname: 'an' }
+const { firstname, lastname } = user;
+
+// AS-IS
+const { firstname: string, lastname: string } = user;
+
+// TO-BE
+const { firstname, lastname }: { firstname: string; lastname: string } = user;
+```
+
+상단과 같은 경우는 굳이 `type casting`를 하지 않아도 컴파일러가 타입을 잘 읽어내는데, 문제는 보통 `api` 호출 이후 `res`값을 받을 때 컴파일러가 타입을 읽지 못하는 경우가 있다. 이럴 땐 `type assertion`을 종종 이용한다. 예를들어, 하단 코드블록 9번라인에 컴파일러가 `req.query`의 `type`이 명확하지 않다고 에러를 뿜는 경우인데, 이럴 땐, 응답하는 값이 강하게(`key`값 + `value` 타입을 아는 경우)정해져있는지, 약하게(`key`와 `value`의 타입만 아는경우) 정해져있는지 살펴본다.
+
+이번 경우는 `query` 내부의 `property`의 `key`가 `returnUrl`으로 정해져있고, `value`가 `string`형으로 고정되어있다는 점을 알고 있어, `TO-BE 2`처럼 `type assertion`을 선언했다. 결론적으로 의도대로 컴파일러가 정상적으로 타입을 읽었다. 만약, 느슨하게 타입만 아는 경우라면 `TO-BE 1`, `TO-BE 1-1`처럼 작성 할 수도 있다는 점을 알아두자.
+
+```typescript
+const res = {
+  query: {
+    returnUrl: '/auth-web/my-accounts',
+  },
+  ...
+}
+
+// AS-IS
+// ts2741: Property 'returnUrl' is missing in type '{ [key: string]: string | string[]; }' but required in type '{ returnUrl: string; }'.
+const { returnUrl }: { returnUrl: string } = req.query
+
+// TO-BE 1
+const { returnUrl }: { [key: string]: string | string[] } = req.query
+
+// TO-BE 1-1
+interface ReqQueryType {
+  [key: string]: string | string[]
+}
+const { returnUrl }: ReqQueryType = req.query
+
+// TO-BE 2
+const { returnUrl } = req.query as { returnUrl: string }
+```
+
+Reference
+1. https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#%EC%83%88%EB%A1%9C%EC%9A%B4_%EB%B3%80%EC%88%98_%EC%9D%B4%EB%A6%84%EC%9C%BC%EB%A1%9C_%ED%95%A0%EB%8B%B9%ED%95%98%EA%B8%B0
+
+---
 ## 📍 Formik으로 input state 쉽게 관리하기
 <a href='https://ywtechit.tistory.com/475'>이전 글</a>에서 2개 이상의 `useState`를 하나로 묶어 `input`을 구현했었다. 그런데, `input`이 필요 할 때마다 `useState`로 생성하여 관리하고, 타입이 여러가지일 때 매번 그에 맞는 `handleChange`를 구현하는것은 상당히 번거롭다고 생각했다. 다른 개발자들도 이미 같은 생각을 했는지, 관련 라이브러리가 이미 존재하고 있었다. <a href='https://formik.org/docs/overview'>Formik</a>과 <a href='https://react-hook-form.com/'>React Hook Form</a> 라이브러리인데, 오늘은 `Formik`에 대해서 자세하게 알아보자. `Formik`은 `React`에서 `Form`을 구현할 때 가장 성가신 세 가지를 도와주는 라이브러리이다. 
 
