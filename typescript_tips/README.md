@@ -1,5 +1,80 @@
 # typescript_tips
 
+## 📍 이중 반복문에서 반복문 순회 후 타입 강제하기
+언뜻 제목만 봐서는 이해하기 힘들 수 있지만, 쉽게 말해 타입이 2개이상인 `data`에서 `find`를 통해 나온 값에 원하는 `property`만 추출하고 싶을 때 사용하는 `assertion` 방법이다. 이미 `data`에 타입이 정해져 있는 경우라면 굳이 `type assertion` 해야되나?라고 생각할 수 있지만, `API`요청을 통해 받은 값(`data`)의 타입이 2개 혹은 2개 이상으로 설정되어있고, 내가 사용하고 싶은 `property`가 각각의 타입에 공통으로 들어있지 않은 `property`인데, 한쪽 타입의 `property`만 추출하면 컴파일 에러가 나는 경우 해결방법에 대해 글을 작성했다.
+
+한가지 예시를 통해 살펴보자. `API`를 통해 받은 값 `data` 값이 있고, 그 `data`의 타입은 `data[][]`이다. 여기서 내가 원하는 로직은 `find`메소드를 사용해 `type===info`의 `value.text`값을 찾고 `type===info`의 `value.text`의 값이 없으면 `Unknown`으로 저장하여 결국엔 `string[]`을 반환하는 로직을 작성하고 싶다. 그런데 하단 코드블록의 `// Bad`처럼 작성하면 `ESlint`에서 `Unsafe assignment ~` 에러가 나오는 모습을 볼 수 있는데, 타입스크립트에서 `dataDocument`의 타입이 명확하지 않아 `any[]`인 타입으로 설정되어 나타나는 에러였다. 그래서 `as`를 사용해 `Not Good`처럼 작성했으나, 이번엔 `text` `property`를 찾지 못한다는 에러였다. `as`로 강제해줬는데 왜 저런 에러가 생기지..?라고 생각하며 30분의 삽질결과 얻은것은 `find` 메소드를 사용하고 나온 결과에 대해 타입을 `InfoType`으로 강제해줘야 `find` 메소드를 사용하고 나온 결과는 모두 `InfoType`이고, `InfoType` 내부에 있는 `value.text`에 접근 할 수 있음을 깨달았다. 이전단계에 `assertion`을 해야한다는 생각하지 못하고 최종단계인 `value.text` 값에 `assertion`하여 생긴 문제였었다! `Good`처럼 작성하면 자연스럽게 옵셔널체이닝(`?`)을 빼도 되므로 한층 가독성이 높아진 코드가 되었다. 나와 같은 문제로 고생하는 분들에게 도움이 되었으면 하는 바람으로 글을 마친다.
+
+![](https://velog.velcdn.com/images/abcd8637/post/93a13de3-b2cc-42ae-8fec-3a28c654bd35/image.png)
+
+![](https://velog.velcdn.com/images/abcd8637/post/f687c9af-c22b-47e8-b5a7-194f337c1d2d/image.png)
+
+```typescript
+// type.ts
+interface InfoType {
+  type: 'info'
+  value: {
+    text: string
+  }
+}
+
+interface ImageType {
+  type: 'images'
+  value: {
+    id: string
+    source?: object
+  }
+}
+
+type Data = InfoType | ImageType
+
+// index.tsx
+const data: Data[][] = [  
+  [
+    { type: "info", value: [Object] },
+    { type: "images", value: [Object] },
+  ],
+  [
+    { type: "info", value: [Object] },
+    { type: "images", value: [Object] },
+  ],
+  [
+    { type: "info", value: [Object] },
+    { type: "images", value: [Object] },
+  ],
+  [
+    { type: "info", value: [Object] },
+    { type: "images", value: [Object] },
+  ],
+];
+
+// Bad
+const infoTextLabels: string[] = data.map(
+  (dataDocument) =>
+    dataDocument.find(({ type }) => type === 'info')?.value.text ||
+    'Unknown',
+)
+
+// Not Bad
+ const infoTextLabels: string[] = data.map(
+    (dataDocument) =>
+      (dataDocument.find(({ type }) => type === 'info')?.value
+        .text as InfoType['value']['text']) || 'Unknown',
+  )
+
+// Good
+const infoTextLabels: string[] = data
+  .map(
+    (dataDocument) =>
+      (
+        dataDocument.find(
+          ({ type }) => type === 'info',
+        ) as InfoType
+      ).value.text || 'Unknown',
+  )
+```
+
+---
 ## 📍 비구조할당문법에 type 선언하기
 코드의 가독성을 높이기 위해 객체나 배열로 된 변수에 비구조화할당 문법(destructuring assignment)을 사용할 때가 자주 있다. `typescript`로 비구조화할당 문법을 사용하면 변수로 꺼낸 값에 타입을 정해주는 경우를 마주하는데 `object`형은 가끔 타입을 어떻게 정해야하는지 헷갈리곤 한다. 이번 글은 거창한 글보단 미세먼지처럼 작은 팁이지만 종종 헷갈릴 때 도움이 되므로 가벼운 마음으로 읽어보자.
 
