@@ -9,6 +9,9 @@
 
 ![](https://velog.velcdn.com/images/abcd8637/post/f687c9af-c22b-47e8-b5a7-194f337c1d2d/image.png)
 
+(22. 7. 5. )
+`typescript`의 `사용자-정의 타입 가드(User-Defined Type Guards)`인 `is` 키워드를 사용 할 수도 있다. 여기서 타입가드란, 스코프 안에서의 타입을 보장하는 런타임 검사를 수행한다는 표현식이다. Use TypeGuard코드에서 `document is InfoType`코드를 통해 타입스크립트가 `document`의 타입의 범위를 `InfoType` 로 축소 시킬 수 있다. (피드백 주셔서 감사합니다. 우디데브님 :))
+
 ```typescript
 // type.ts
 interface InfoType {
@@ -72,7 +75,21 @@ const infoTextLabels: string[] = data
         ) as InfoType
       ).value.text || 'Unknown',
   )
+
+// Use TypeGuard
+const tabLabels = entries
+  .map(
+    (embeddedDocument) =>
+      embeddedDocument.find(
+        (document): document is InfoType =>
+          document.type === 'heading3',
+      )?.value.text || 'Unknown',
+  )
 ```
+
+Reference
+1. https://typescript-kr.github.io/pages/advanced-types.html#%EC%82%AC%EC%9A%A9%EC%9E%90-%EC%A0%95%EC%9D%98-%ED%83%80%EC%9E%85-%EA%B0%80%EB%93%9C-user-defined-type-guards
+2. https://blog.logrocket.com/how-to-use-type-guards-typescript/#equality-narrowing-typeguard
 
 ---
 ## 📍 비구조할당문법에 type 선언하기
