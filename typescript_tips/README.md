@@ -1,5 +1,63 @@
 # typescript_tips
 
+## 📍 query문의 value값에 key값과 동일한 값이 들어가있을 때
+본인인증 기능을 구현하던 중 `query`에 `key=value`값이 하나씩 추가된 상태로 다른 페이지를 방문하다 마지막에 `query`문을 변수로 사용하려고 할 때 겪었던 일이다. 전체 query문은 `http://localhost:3001/foo/bar?returnUrl=returnUrl=/foo&id=baz`와 같았는데 `query`문을 분석하면 `returnUrl=returnUrl=/foo`가 한 묶음 `id=baz`가 한 묶음인 총 2개의 `query`가 나왔다. 두번째 `query`값은 별 이상이 없었으나, 첫번째 `query`가 이상했는데, 바로 첫번째 `query`의 `key`값인 `returnUrl`이 `value`값에도 들어가있다는 점이었다. 당시 `value`에 `returnUrl=`은 필요없기 때문에 해당 값을 제거해야 할 필요성을 느꼈는데, 나중에 매우 간편한 방법으로 해결했지만 처음엔 어떻게 제거해야할지 몰랐다. 그래서 <a href='https://github.com/ljharb/qs#stringifying'>qs 라이브러리의 encoder</a>을 이용했다. 사용방법은 `README`를 참고하자. `stringify`의 두번째인자에 `encoder` 함수를 선언하면 첫번째 인자에 `query`문이 넘어오게 되고, 네번째 인자인 `type`을 이용해 `type`이 `value`일 때 조건을 걸어 원하는 쿼리값이 넘어오면 `includes`를 통해 `split`을 하는방법을 사용했으나, 가독성이 매우 떨어지는 코드가 되었다. 그래서 곰곰이 생각 + 코드리뷰 끝에 떠올린것은 `query`문을 넘겨줄 때 `key`값을 만들어 넘기는 방법 대신 `qs.parse`를 이용하여 `key`값을 만들지 않고 `value`에 있는 값(`returnUrl=/foo`)의 `returnUrl`을 `key`값인 객체형태로 만들어 `qs.stringify`에 넘겨줄 때 `spread operator`를 사용했고 결과적으로 이전 코드보다 더 가독성이 좋아진 코드가 되었다. `qs.stringify`를 사용할 때 `key`값이 `value`에 중복선언 되어있어 제거해야하는 경우가 필요하다면 이 글처럼 `parse` + `...`로 해결해보자. 불필요하게 `encoder`를 사용하지 않고도 해결 할 수 있다.
+
+```typescript
+import { stringify } from 'qs'
+
+// encoder example
+var encoded = qs.stringify({ a: { b: 'c' } }, { encoder: function (str, defaultEncoder, charset, type) {
+    if (type === 'key') {
+        return // Encoded key
+    } else if (type === 'value') {
+        return // Encoded value
+    }
+}})
+
+// before
+const url = generateUrl({
+    path,
+    query: stringify(
+      {
+        returnUrl: returnUrlQuery,
+        ordrIdxx,
+      },
+      {
+        encoder: (query: string, _0, _1, type) => {
+          if (type === 'value') {
+            const value = 'returnUrl='
+            const isValue = query.includes(value)
+            if (isValue) {
+              const [, extractValue] = query.split(value)
+              return extractValue
+            }
+          }
+          return query
+        },
+      },
+    ),
+  })
+
+// after
+import { stringify, parse } from 'qs'
+
+const { path, query: returnUrlQuery } = parseUrl(returnUrl) // returnUrlQuery: returnUrl=/foo
+const originalQuery = parse(returnUrlQuery)  // { returnUrl: '/foo' }
+
+const url = generateUrl({
+  path,
+  query: stringify({
+    ...originalQuery,
+    baz,
+  }),
+  })  // url: /foo/bar?returnUrl=/foo
+```
+
+Reference
+1. <a href='https://github.com/ljharb/qs#stringifying'>qs-stringify</a>
+
+---
 ## 📍 이중 반복문에서 반복문 순회 후 타입 강제하기
 언뜻 제목만 봐서는 이해하기 힘들 수 있지만, 쉽게 말해 타입이 2개이상인 `data`에서 `find`를 통해 나온 값에 원하는 `property`만 추출하고 싶을 때 사용하는 `assertion` 방법이다. 이미 `data`에 타입이 정해져 있는 경우라면 굳이 `type assertion` 해야되나?라고 생각할 수 있지만, `API`요청을 통해 받은 값(`data`)의 타입이 2개 혹은 2개 이상으로 설정되어있고, 내가 사용하고 싶은 `property`가 각각의 타입에 공통으로 들어있지 않은 `property`인데, 한쪽 타입의 `property`만 추출하면 컴파일 에러가 나는 경우 해결방법에 대해 글을 작성했다.
 
