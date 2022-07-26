@@ -1,3 +1,97 @@
+## 📍 불필요한 prop drilling 줄이기
+`React`에서 페이지 내부에 2~3개의 컴포넌트를 선언하며 `props`로 전달하는 경우가 있을 것이다. 이번 글은 한 페이지 내에 컴포넌트 3개(`A` -> `B` -> `C`)를 선언하여 단순히 `props`로 전달만하는 `B`컴포넌트의 `prop drilling`을 어떻게 해결했는지 알아보자.
+
+우선, `React`를 다뤄 본 개발자라면 `prop drilling`에 대해 한 번쯤은 들어봤을 것이다. `prop drilling`이란, `props`를 이용해 자식 컴포넌트로 데이터를 내려줄 때 모든 레벨에서 같은 데이터가 전송되는 상황을 말한다.
+
+![](https://velog.velcdn.com/images/abcd8637/post/fa003998-d2fb-40db-b998-cc496bef0acf/image.png)
+
+규모가 작을 때 `prop drilling`은 빠르고 쉽게 데이터를 전송할 수 있고, 구현 방법이 쉽고, `props`로 전달된 데이터의 상태 변경 시 새로운 변경사항을 쉽게 업데이트 할 수 있는 장점이 있다. 그러나 자식 컴포넌트가 부모 컴포넌트의 데이터를 전달해주는 역할로만 사용되고 그 때문에 코드가 불필요하게 길어지며 필요하지 않은 데이터까지 전달해줄 수 있기 때문에 프로젝트의 규모가 커질수록 권장하지 않는 방법이다. 
+
+이럴 경우 `contextAPI` 혹은 전역상태관리 라이브러리의 도움을 받을 수 있지만, 이번엔 그들의 도움을 받지 않고 코드를 어떻게 줄였는지를 예시를 들어 살펴보자.
+
+우선, `API`를 이용해 `User`가 가입한 계정을 찾는 `Accounts` 데이터를 가져온다고 가정해보자. 
+
+필자는 처음 `AccountsFound`란 컴포넌트에서 `User`의 `Accounts`를 가져온다. 그리고 같은 데이터의 `Accounts`가 담겨있는 데이터를 `Accounts`란 컴포넌트로 넘기고 이들을 하나씩 보여주기 위해 `map`함수를 사용해 `Account`라는 컴포넌트로 전달해주었다. 아래 코드블록을 보자.
+
+```typescript
+// before
+interface AccountType {
+  name: string
+  email: string 
+  createdAt: Date
+}
+
+function AccountsFound({ accounts }: { accounts: AccountType[] }) {
+  return <Accounts accounts={accounts} />
+}
+
+function Accounts({ accounts }: { accounts: AccountType[] }) {
+  return (
+    <>
+      <div>고객님의 계정 정보입니다.</div>
+      {accounts.map((item, idx) => (
+        <Account key={idx} info={item} />
+      ))}
+    </>
+  )
+}
+
+function Account({ account }: { account: AccountType }) {
+  const { name, email, createdAt } = extractAccountData(account)
+
+  return (
+    <>
+      <div>{name}</div>
+      <div>{email}</div>
+      <div>{createdAt}</div>
+    </>
+  )
+}
+```
+
+이 페이지에서 작성된 코드 중 비효율적으로 작성된 부분을 찾을 수 있겠는가?
+
+1. 15라인의 `<div>`는 `map`을 통해 `accounts`의 개수만큼 새롭게 렌더링 된다. 같은 데이터를 불필요하게 매번 새롭게 렌더링 된다.
+2. 부모(`<Accounts />`) 컴포넌트는 자식(`<Account />`) 컴포넌트에게 단순히 데이터만 전달해주는 역할만 하고 있다. (이 부분이 `propDrilling`) 따라서, `<Accounts />` 컴포넌트를 없앤다. 즉, 컴포넌트의 렌더링 순서를 `AccountsFound -> Accounts -> Account`에서 `AccountsFound -> Account`로 줄여준다.
+
+```typescript
+// after
+interface AccountType {
+  name: string
+  email: string 
+  createdAt: Date
+}
+
+function AccountsFound({ accounts }: { accounts: AccountType[] }) {
+  return (
+    <>
+      <div>고객님의 계정 정보입니다.</div>
+      {accounts.map((account, idx) => (
+        <Account key={idx} account={account} />
+      ))}
+    </>
+  )
+}
+
+function Account({ account }: { account: AccountType }) {
+  const { name, email, createdAt } = extractAccountData(account)
+
+  return (
+    <>
+      <div>{name}</div>
+      <div>{email}</div>
+      <div>{createdAt}</div>
+    </>
+  )
+}
+```
+
+이렇게 해서 `prop drilling`을 전역상태관리로 해결하는 것이 아니라 불필요한 컴포넌트를 제거하면서 코드를 간단히 줄이는 예시를 살펴봤다. 단순히 데이터만 전달해주는 컴포넌트가 많아졌다고 생각하면 `prop drilling`을 하는 것은 아닌지 한 번쯤 자신을 되돌아볼 수 있는 시간을 잠깐이나 가지며 이 글을 마친다. 
+
+Reference
+1. https://www.geeksforgeeks.org/what-is-prop-drilling-and-how-to-avoid-it/
+
+---
 ## 📍 Route에서 props 전달이 안될 때
 
 React Router를 사용할 때 `props`가 정상적으로 전달되지 않으면 어떤 `component`에 `props`를 주고있는지 확인해보자.
