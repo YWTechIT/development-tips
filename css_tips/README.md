@@ -1,4 +1,30 @@
 # css-tips
+
+### 📍 공백이 포함된 문장 모두 줄바꿈하기
+반응형을 고려하며 공백이 포함된 문장까지 브라우저의 너비가 줄어들면 해당 문장을 모두 줄바꿈해야하는 니즈가 생겼다. 그래서 줄바꿈 관련 CSS인 <a href='https://developer.mozilla.org/ko/docs/Web/CSS/word-break'>word-break</a>와 <a href='https://developer.mozilla.org/ko/docs/Web/CSS/white-space'>white-space</a> 그리고 <a href='https://developer.mozilla.org/ko/docs/Web/CSS/overflow'>overflow</a> 등을 살펴보며 해답을 생각했지만 뾰족한 수가 나오지 않았다.
+
+그래서 팀원들에게 현재 생긴 이슈를 공유하며 해결법을 찾고있는데, 공백을 뜻하는 `&nbsp;`와 `word-break: keep-all` 속성을 이용하면 해결할 수 있다는 팀원의 말을 듣고 작성해보니 해결됐다.
+
+추가로 `&nbsp;`란, `Non-breaking Space`의 약어인데, 단어 뜻 그대로 공백을 의미한다. 특수기호가 붙은 이유는 일반적인 문자과 구분하기 위해서다. 외관상으로 공백이 있는것처럼 보이지만, 이 위치에서 줄바꿈이 될 수 없다는 뜻이다.
+
+여담으로, `React Component`에서 `&nbsp;`를 작성하면 가끔 문자 그대로 출력되는 경우가 있는데, 이럴 때는 `HTML`코드인 `&nbsp;`를 넣는게 아니라, 유니코드 문자인 `\u00A0`을 넣으면 된다.
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="&amp;nbsp + keep-all" src="https://codepen.io/YWTechIT/embed/qBoKMJE?default-tab=html%2Cresult&editable=true&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/YWTechIT/pen/qBoKMJE">
+  &amp;nbsp + keep-all</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="Untitled" src="https://codepen.io/YWTechIT/embed/NWYzLVM?default-tab=html%2Cresult&editable=true&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/YWTechIT/pen/NWYzLVM">
+  Untitled</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+Reference
+1. https://ko.wikipedia.org/wiki/%EC%A4%84_%EB%B0%94%EA%BF%88_%EC%97%86%EB%8A%94_%EA%B3%B5%EB%B0%B1
+2. https://www.compart.com/en/unicode/U+00A0
+
 ### 📍 반응형을 고려하여 Cards 컴포넌트 중앙 정렬하기
 CSS를 만지다보면 항상 내 뜻대로 안 될 때가 많다. ~~그럴 때마다 직접 손으로 움직여주고 싶은 마음이 굴뚝 같지만 프로그래머이니까 코드로 움직이는 방법을 사용하자.~~ 
 
