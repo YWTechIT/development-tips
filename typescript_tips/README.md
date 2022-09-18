@@ -1,5 +1,146 @@
 # typescript_tips
 
+## 📍 핸들러 함수내부에서 중복으로 사용되는 함수 리팩토링하기
+`React`로 컴포넌트가 아닌 컴포넌트 내부에서 `onClick`시 동작하는 `handler`함수를 만들다보면, `handler` 함수 내부에서 사용되는 함수를 조건으로 분기할 때 해당 함수가 중복으로 사용하는 경우가 종종 있다. 이번 포스팅은 애자일 소프트웨어 개발 방법의 하나인 `페어 프로그래밍(Pair programming)`으로 작업을 하다가 `네비게이터(navigator)`를 맡고 계신 헤일리가 발견해주신 케이스인데, 조건에 의해 인자 값이 바뀌어도 함수는 동일하게 사용할 때 중복되는 코드를 어떻게 하나로 합쳤는가에 대해 작성해보려 한다. 하단 코드는 리팩토링 전 `clickEventHandler` 함수의 코드이다. 이 코드로 컴파일하는데 에러는 없지만 리액트를 다뤄본 개발자라면 같은 역할을 하지만 중복된 코드를 봤다면 하나로 합치고 싶다는 생각이 뿜뿜 할 것이고 코드를 어떻게 개선했는지에 대해 작성해봤다. 리팩토링은 여러가지 방법이 있고, 개발자마다 그 방법이 다르기 때문에 이런 방법도 있구나라는 것에 초점을 맞춰주면 감사하겠다.(댓글에 피드백을 달아주시는것도 물론 환영이다.) 그럼 초기코드를 한번 살펴보자.(바쁘지 않다면 직접 리팩토링해보자.)
+
+```typescript
+// AS-IS
+function clickEventHandler(
+  onLinkClick?: LinkEventHandlerType,
+  onImageClick?: ImageEventHandlerType,
+): ImageEventHandlerType {
+  return (event, image) => {
+    if (image.link && image.link.hash && onLinkClick) {
+      return onLinkClick(event, {
+         href: `#${image.link.hash}`,
+      })
+    }
+    if (image.link && image.link.href && onLinkClick) {
+      return onLinkClick(e, {
+          href: image.link.href,
+        })
+    } else if (onImageClick) {
+      return onImageClick(event, image)
+    }
+  }
+}
+```
+
+중복되는 코드를 찾았는가? 나는 7번과 13번의 `image.link && onLinkClick` 코드가 중복되는것을 찾았다. 더 좋은 방법도 있겠지만 `image.link && onLinkClick`를 하나의 조건문으로 합쳐보았다.
+
+```typescript
+function clickEventHandler(
+  onLinkClick?: LinkEventHandlerType,
+  onImageClick?: ImageEventHandlerType,
+): ImageEventHandlerType {
+  return (event, image) => {
+    if (image.link && onLinkClick) {
+      if (image.link.hash) {
+        return onLinkClick(event, {
+          href: `#${image.link.hash}`,
+        })
+      }
+
+      if (image.link.href) {
+        return onLinkClick(e, {
+          href: image.link.href,
+        })
+      } else if (onImageClick) {
+        return onImageClick(event, image)
+      }
+    }
+  }
+}
+```
+
+이렇게 하나의 조건문으로 합치고났는데, 다음엔 어떻게 리팩토링하면 좋을까?! 여러가지 방법이 있지만, 나는 `onLinkClick`의 중복사용을 줄이고 싶었다. 그래서 `onLinkClick` 함수를 한번만 사용하기위해 `image.link.hash`와 `image.link.href`값을 삼항연산자로 따로 빼내어 변수로 선언했다.
+
+```typescript
+function clickEventHandler(
+  onLinkClick?: LinkEventHandlerType,
+  onImageClick?: ImageEventHandlerType,
+): ImageEventHandlerType {
+  return (event, image) => {
+    if (image.link && onLinkClick) {
+      const href = image.link.hash ? `#${image.link.hash}` : image.link.href
+      return onLinkClick(event, { href })
+    } else if (onImageClick) {
+      return onImageClick(event, image)
+    }
+  }
+}
+```
+
+마지막으로 구조분해할당 문법을 사용하여 마무리했다. 8번 라인에서 `href: prevHref`로 작성한 이유는 9번 라인에서 `href` 변수로 선언해야 `onLinkClick` 함수의 두번째 인자를 `{ href: href }` 대신 `{ href }`로 사용 할 수 있기 때문이다.
+
+```typescript
+function clickEventHandler(
+  onLinkClick?: LinkEventHandlerType,
+  onImageClick?: ImageEventHandlerType,
+): ImageEventHandlerType {
+  return (event, image) => {
+    if (image.link && onLinkClick) {
+      const { hash, href: prevHref } = image.link
+      const href = hash ? `#${hash}` : prevHref
+      return onLinkClick(event, { href })
+    } else if (onImageClick) {
+      return onImageClick(event, image)
+    }
+  }
+}
+```
+
+결론적으로 리팩토링 전과 후의 코드는 다음과 같다.
+
+```typescript
+// AS-IS
+function clickEventHandler(
+  onLinkClick?: LinkEventHandlerType,
+  onImageClick?: ImageEventHandlerType,
+): ImageEventHandlerType {
+  return (event, image) => {
+    if (image.link && onLinkClick) {
+      if (image.link.hash) {
+        return onLinkClick(event, {
+          href: `#${image.link.hash}`,
+        })
+      }
+
+      if (image.link.href) {
+        return onLinkClick(e, {
+          href: image.link.href,
+        })
+      } else if (onImageClick) {
+        return onImageClick(event, image)
+      }
+    }
+  }
+}
+
+// TO-BE
+function clickEventHandler(
+  onLinkClick?: LinkEventHandlerType,
+  onImageClick?: ImageEventHandlerType,
+): ImageEventHandlerType {
+  return (event, image) => {
+    if (image.link && onLinkClick) {
+      const { hash, href: prevHref } = image.link
+      const href = hash ? `#${hash}` : prevHref
+      return onLinkClick(event, { href })
+    } else if (onImageClick) {
+      return onImageClick(event, image)
+    }
+  }
+}
+```
+
+이렇게 중복사용되어 불필요하게 길어진 너저분한 코드를 리팩토링해봤다. 이번 리팩토링의 규모는 크진 않지만 작은 코드부터 리팩토링하다보면 언젠가 규모가 큰 코드도 금방 리팩토링 할 수 있지 않을까..?라는 생각을 하며 이번 포스팅을 마친다.
+
+Reference
+1. <a href='https://ko.wikipedia.org/wiki/%ED%8E%98%EC%96%B4_%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D'>페어 프로그래밍 - 위키백과</a>
+2. <a href='https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment'>구조 분해 할당 - MDN</a>
+
+
 ## 📍 query문의 value값에 key값과 동일한 값이 들어가있을 때
 본인인증 기능을 구현하던 중 `query`에 `key=value`값이 하나씩 추가된 상태로 다른 페이지를 방문하다 마지막에 `query`문을 변수로 사용하려고 할 때 겪었던 일이다. 전체 query문은 `http://localhost:3001/foo/bar?returnUrl=returnUrl=/foo&id=baz`와 같았는데 `query`문을 분석하면 `returnUrl=returnUrl=/foo`가 한 묶음 `id=baz`가 한 묶음인 총 2개의 `query`가 나왔다. 두번째 `query`값은 별 이상이 없었으나, 첫번째 `query`가 이상했는데, 바로 첫번째 `query`의 `key`값인 `returnUrl`이 `value`값에도 들어가있다는 점이었다. 당시 `value`에 `returnUrl=`은 필요없기 때문에 해당 값을 제거해야 할 필요성을 느꼈는데, 나중에 매우 간편한 방법으로 해결했지만 처음엔 어떻게 제거해야할지 몰랐다. 그래서 <a href='https://github.com/ljharb/qs#stringifying'>qs 라이브러리의 encoder</a>을 이용했다. 사용방법은 `README`를 참고하자. `stringify`의 두번째인자에 `encoder` 함수를 선언하면 첫번째 인자에 `query`문이 넘어오게 되고, 네번째 인자인 `type`을 이용해 `type`이 `value`일 때 조건을 걸어 원하는 쿼리값이 넘어오면 `includes`를 통해 `split`을 하는방법을 사용했으나, 가독성이 매우 떨어지는 코드가 되었다. 그래서 곰곰이 생각 + 코드리뷰 끝에 떠올린것은 `query`문을 넘겨줄 때 `key`값을 만들어 넘기는 방법 대신 `qs.parse`를 이용하여 `key`값을 만들지 않고 `value`에 있는 값(`returnUrl=/foo`)의 `returnUrl`을 `key`값인 객체형태로 만들어 `qs.stringify`에 넘겨줄 때 `spread operator`를 사용했고 결과적으로 이전 코드보다 더 가독성이 좋아진 코드가 되었다. `qs.stringify`를 사용할 때 `key`값이 `value`에 중복선언 되어있어 제거해야하는 경우가 필요하다면 이 글처럼 `parse` + `...`로 해결해보자. 불필요하게 `encoder`를 사용하지 않고도 해결 할 수 있다.
 
