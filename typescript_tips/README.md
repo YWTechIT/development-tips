@@ -1,5 +1,37 @@
 # typescript_tips
 
+## 📍 PropsWithChildren으로 children 짧게 작성하기
+`React`에서 `Component`를 작성하다보면 `props`에 `children`을 선언하는 경우가 종종 있다. 그런데, 매번 `children`과 해당 타입을 명시해주는것은 번거롭지 않은가? 그래서 `children`의 타입을 따로 명시해주지 않아도 되는 `react`에서 지원하는 `PropsWithChildren`문법이 있다. `PropsWithChildren`은 `React.PropsWithChildren`로 사용하거나 혹은 `import { PropsWithChildren } from 'react'`로 사용 할 수 있고 타입은 다음과 같다. `type PropsWithChildren<P> = P & { children?: ReactNode | undefined }` 
+
+코드를 살펴보면 `children`을 `optional`하게 사용 할 수 있고, 타입은 `ReactNode`이라는 점이다. 컴포넌트를 작성할 때 `children`의 타입을 `ReactNode`으로 사용했는데, 이를 생략할 수 있다니 상당한 문법이다.. 그럼 사용 예시를 살펴보자. `AS-IS`를 살펴보면 `props`에 `children`과 타입이 명시되어있는 것을 볼 수 있고 `TO-BE`에는 `props`에 `children`이 없는 것을 볼 수 있다. `children` 코드가 짧기 때문에 많이 줄었다라고 보기 힘들지만 수고로움을 덜어준 것으로 만족한다.
+
+```typescript
+// node_modules/@types/react/index.d.ts
+type PropsWithChildren<P> = P & { children?: ReactNode | undefined };
+
+// AS-IS
+function Component1({ children, title }: { children?: ReactNode, title: string}){
+  return(
+     <div>
+        <div className="title">{title}</div>
+        {children}
+     </div>
+  )
+}
+
+// TO-BE
+function Component2({ children, title }): PropsWithChildren<{ title: string }> {
+  return(
+     <div>
+        <div className="title">{title}</div>
+        {children}
+     </div>
+  )
+}
+```
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="PropsWithChildren" src="https://codepen.io/YWTechIT/embed/OJZxNLZ?default-tab=js%2Cresult&editable=true&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">See the Pen <a href="https://codepen.io/YWTechIT/pen/OJZxNLZ"></iframe>
+
 ## 📍 핸들러 함수내부에서 중복으로 사용되는 함수 리팩토링하기
 `React`로 컴포넌트가 아닌 컴포넌트 내부에서 `onClick`시 동작하는 `handler`함수를 만들다보면, `handler` 함수 내부에서 사용되는 함수를 조건으로 분기할 때 해당 함수가 중복으로 사용하는 경우가 종종 있다. 이번 포스팅은 애자일 소프트웨어 개발 방법의 하나인 `페어 프로그래밍(Pair programming)`으로 작업을 하다가 `네비게이터(navigator)`를 맡고 계신 헤일리가 발견해주신 케이스인데, 조건에 의해 인자 값이 바뀌어도 함수는 동일하게 사용할 때 중복되는 코드를 어떻게 하나로 합쳤는가에 대해 작성해보려 한다. 하단 코드는 리팩토링 전 `clickEventHandler` 함수의 코드이다. 
 
