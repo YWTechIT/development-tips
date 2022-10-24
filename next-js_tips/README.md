@@ -1,5 +1,29 @@
 # next-js_tips
 
+## 📍 next/router 사용 시 무한 렌더링 이슈 해결하기
+`Next.js`로 특정 페이지에 접속하면 무한 새로고침 되는 이슈를 발견했다. 원인은 `next/router - Router.replace` 때문이었는데, 클라이언트 사이드에서 `Router.replace`를 사용한 이유는 필터에 조건을 넣고 검색 버튼을 클릭하면 해당 필터 값을 쿼리에 추가하여 다른 사람에게 링크를 공유할 때 필터를 두 번 조작하지 않도록 하기 위함이었다. 그래서 `Router.replace`와 `state`를 잃지 않고 `pathname`과 `query` 값을 업데이트 할 수 있는 옵션인 `shallow Routing: true`를 추가했으나 무한 렌더링(새로고침) 되는 이슈가 생겼다. 
+
+왜 이런 현상이 발생하는지 알아보기 위해 구글링 해본 결과 결론적으로 `next/router`를 사용할 때 리액트 내부에서 사용하는 `ContextAPI`를 사용하게 되고, `router.*`를 실행하면 내부 상태 값을 바꾸기 위해 필연적으로 리액트의 리렌더링을 발생시키므로 이를 해결하기 위해 `next/router` 대신 리액트의 `state`를 건들지 않고 브라우저 `history`를 사용하는 `window.history API`를 사용하는것이 좋다. 그러면 리액트의 상태를 건들지 않기 때문에 리렌더링이 발생하지 않는다는 <a href='https://github.com/vercel/next.js/discussions/18072'>글</a>을 봤다. 그래서 `Router.replace` 대신 `window.history.replaceState`를 사용해보니 무한 렌더링 이슈가 해결되었다. 
+
+`issue`를 `tracking` 하는데 꽤 오랜 시간이 걸렸는데, 이후에 나와 같은 문제를 겪는 분들에게 도움이 되었으면 좋겠는 마음에 글을 남긴다.
+
+```typescript
+const newPath = `/tour/tour-products?${stringify(query)}`;
+
+// AS-IS
+Router.replace(newPath, undefined, {
+  shallow: true,
+})
+
+// TO-BE
+history.replaceState({}, '', newPath)
+```
+
+Reference
+1. <a href='https://nextjs.org/docs/routing/shallow-routing'>Shallow Routing</a>
+2. <a href='https://github.com/vercel/next.js/discussions/18072'>Ability to push changes to url without re-rendering #18072</a>
+
+---
 ## 📍 Rewrites와 Redirects 알아보기
 로컬에서 `Next.js`로 작업 할 때 한 개 프로젝트가 아니라 두 개 프로젝트를 동시에 실행해야하는 경우가 종종 있다. 예를 들면 로그인을 담당하는 A프로젝트(port: 3001)에서 본인인증을 담당하는 B프로젝트(port: 3000)를 실행하는 경우가 그런경우다. 이럴 때 A에서 B프로젝트로 넘어가려면 `http://localhost:3000/verifications`를 작성하고 다시 B에서 A프로젝트로 넘어 올때는 `http://localhost:3001/auth-web`을 작성하고 AWS를 통해 배포 할 때는 `path`만 남겨두고, 로컬에서 테스트 할 때는 다시 호스트와 포트를 붙이고.. 이렇게 수동적이고 번거로운 작업을 지속하다간 다른 작업을 하지 못할 것 같았다. 이럴 때 `next.config.js`에서 관련 설정을 할 수 있었는데, 바로 `Rewrites`와 `Redirects`이다.
 
