@@ -1,3 +1,24 @@
+## 📍 window.history.pushState와 history.replaceState을 알아보자
+`history.pushState()`는 브라우저의 세션 기록 스택에 새롭게 추가한다. 문법은 다음과 같은데, (`pushState(state, unused, url?)`) `state`는 사용자가 새로운 페이지로 이동할 때마다 `popstate` 이벤트가 발생한다. `unused`는 역사적 이유로 존재하며, 생략할 수 없다. 추후에 변경 예정이므로 당분간 빈 문자열('')을 사용하자. `url`을 사용하면 해당 `URL`로 이동하지 않지만, 나중에 사용자가 브라우저를 재 시작하면 해당 `URL` 로드를 시도할 수 있다. 반환 값은 `undefined`이다. 포인트는 `URL`값은 현재 `URL`과 동일한 출처(`same origin`)여야 하는데, 예를 들어 현재 페이지가 `www.google.com`인데, `history.pushState({ foo: 'bar' }, "", 'https://www.naver.com/')`을 사용 할 수 없다. 만약, 외부 URL을 호출하게 되면 다음과 같은 에러가 발생한다.
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1666784121/ywtechit/y27k3f2jviyxvet3i3cs.png)
+
+`history.pushState()`와 `window.location = "#foo"`은 현재 페이지의 `history`를 생성하는것은 같지만, `history.pushState()`의 이점(`advantage`)이 조금 더 크다.
+1. `history.pushState()`에서 사용하는 `URL`은 `same origin`이다. 반면 `window.location`은 `hash`만 수정하는 경우에 동일한 페이지로 유지된다.
+2. 세 번째 인자의 `URL`은 `optional`이지만, `window.location = "#foo"`와 같은 경우는 현재 `hash`값이 `#foo`가 아닌 경우에만 새로운 `history`를 만든다.
+3. 임의의 데이터를 새 `history` 항목에 연결할 수 있다. `hash` 기반 접근 방식을 사용하면 모든 관련 데이터를 문자열로 인코딩해야 한다.
+4. 새 URL이 이전 URL과 해시만 달라도 `pushState()`는 절대 `hashchange` 이벤트를 발생시키지 않는다.
+
+`history.replaceState()`는 `history.pushState()`와 비슷하지만, 현 `depth`의 `session history`를 변경한다는 점에서 `history.pushState()`와 다르다. (`history.pushState()`는 `session history`에 새로운 세션 기록을 추가한다.) 문법은 `history.pushState()`와 동일하게 `replaceState(stateObj, un(used, url?)`로 작성한다. 반환 값은 `undefined`이다. 
+
+예를 들어 현재 페이지(`https://www.mozilla.org/foo.html`)에서 새 탭에 다음을 입력해보자. `history.pushState({ foo: 'bar' }, '', 'bar.html');` 그런 후 콘솔창에 `history`를 입력하면 여전히 `length`가 1개인 것을 알 수 있다. 이를 통해 알 수 있는 점은 `history.pushState()`와 다르게 `session history`에 새로운 `history`를 추가한 것이 아니라 기존에 있던 `session history`값을 방금 선언한 값으로 대체한 것이다. 또 `history`의 `state`를 보면 기존에 없던 `state: { foo: 'bar' }`가 생긴 것을 알 수 있다. 그다음 `history.replaceState({ bar: 'baz' },'', 'bar2.html')`를 입력해보면 여전히 `length`가 1개이다. 알아두어야 할 점은 세 번째 인자인 `URL` 파라미터를 넣는다고 해도 브라우저는 `bar2.html`가 존재하는지 확인하지 않는다. 마지막으로 주소 표시창에 `www.naver.com`을 입력하여 엔터를 클릭하고 브라우저의 뒤로 가기 버튼을 클릭하면 마지막에 작성한 `bar2.html`이 나오고 한번 더 뒤로 가기를 누르면 `bar.html` 대신 `foo.html`가 나오고 `bar.html`을 완전히 우회한다는 점을 알 수 있다.
+
+Reference
+1. <a href='https://developer.mozilla.org/en-US/docs/Web/API/History/pushState'>History.pushState - MDN</a>
+2. <a href='https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState'>History.replaceState - MDN</a>
+2. <a href='https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event'>window: popstate event - MDN</a>
+
+---
 ## 📍 npm install 후 package-lock.json의 diff가 많을 때
 내가 담당한 `repository`를 작업하기 전에, 터미널에 `npm install`으로 해당 `project`를 실행하기 위해 필요한 패키지를 설치하는 도중 `VSCode`의 `Source Control - Changes`에서 `main` 브랜치의 `package-lock.json`의 코드와 다르게 `diff`가 엄청 많이 생기면서 `npm run dev`를 실행하면 오류가 뜨면서 정상적으로 `local` 환경 실행이 안되는 경우가 있었다.
 
