@@ -1,3 +1,42 @@
+## 📍 && 대신 삼항연산자 사용하기
+리액트로 렌더링 view를 그릴 때 종종 `&&` 연산자를 이용해 조건부 렌더링을 할 때가 있을 것이다. 예를 들어 하단 코드블럭처럼 `isCondition`이 `true`일 경우 `안녕하세요!`를 렌더링하게 된다. 
+
+여담으로 `&&`연산자는 `Logical AND`, 단축평가(short circuit evaluation)라고 하며, 일반적으로 왼쪽에서 오른쪽으로 피연산자를 평가하여 처음 만나는 연산자가 `falsy`인 경우 `false`를 반환하고, 모든 연산자가 `truthy` 한 경우 마지막 연산자를 반환하는 개념이다. `falsy`는 `Boolean` context로 변경될 때 `false`로 평가되는 값으로 `JS`에서는 `false, 0, -0, "", null, undefined, NaN`가 있다. `truthy`는 `falsy`와 반대로  `Boolean` context로 변경될 때 `true`로 평가되는 값으로 JS에서 `falsy`값을 제외하면 모두 참이다. 예를 들면 `true, {}, [], 123, "0", "false", 3.14, -3.14, Infinity` 등등이 있다. 
+
+다시 본론으로 돌아와 하단의 `App` 컴포넌트는 `안녕하세요!`를 리턴한다.
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="use ternary operator instead of &amp;&amp;" src="https://codepen.io/YWTechIT/embed/BaVLpQK?default-tab=js%2Cresult&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/YWTechIT/pen/BaVLpQK">
+  use ternary operator instead of &amp;&amp;</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+그런데, `condition`이 `boolean`으로 추정되지 않거나 `undefined`일 경우 `react`가 다음 에러를 뿜을 수 있다.
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1667825948/gajuoouc627p71hqa4le.png)
+
+코드는 약간 길어질 수 있지만, 결론적으로 잠재적인 버그를 예방하기 위해서 `&&` 대신 `삼항연산자`를 사용하는 이유가 바로 이것이다. 
+
+```javascript
+// AS-IS
+isCondition && <Hello />
+
+// TO-BE
+isCondition ? <Hello /> : null
+```
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="use ternary operator instead of &amp;&amp;" src="https://codepen.io/YWTechIT/embed/BaVLpQK?default-tab=js%2Cresult&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/YWTechIT/pen/BaVLpQK">
+  use ternary operator instead of &amp;&amp;</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+Reference
+1. <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_AND'>Logical AND - MDN</a>
+2. <a href='https://developer.mozilla.org/en-US/docs/Glossary/Falsy'>Falsy - MDN</a>
+3. <a href='https://developer.mozilla.org/en-US/docs/Glossary/Truthy'>Truthy - MDN</a>
+
+---
 ## 📍 불필요한 prop drilling 제거하기
 `React`에서 페이지 내부에 2~3개의 컴포넌트를 선언하며 `props`로 전달하는 경우가 있을 것이다. 이번 글은 한 페이지 내에 컴포넌트 3개(`A` -> `B` -> `C`)를 선언하여 단순히 `props`로 전달만하는 `B`컴포넌트의 `prop drilling`을 어떻게 해결했는지 알아보자.
 
