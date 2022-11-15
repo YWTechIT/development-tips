@@ -1,3 +1,34 @@
+## 📍 filter + join 메서드로 가독성있는 코드 작성하기
+`string | null` 타입을 가지는 `a`, `b`를 사용하여 `a·b`로 나타내야한다. 만약, 둘 중에 하나라도 `null`일 경우 `·`를 표시하지 않고, `string` 타입만 나타내야한다. 예를 들어 `a = 'foo'`이고, `b = bar`일 때 둘 다 값이 존재하면 `foo·bar`로, `a`타입만 존재하면 `foo`, `b`타입만 존재하면 `bar`, `a`와 `b` 둘 다 존재하지 않는 경우 `null | ''`을 나타내야한다. 이럴 때 어떻게 가독성있게 코드를 작성 할 것인가? 리액트에서 사용 할 때 `AS-IS`는 조건식과 `join` 메서드를 사용하여 `a && b ? [a, b].join('·') : a || b`로 나타냈는데, 가독성이 너무 떨어졌다. 그래서 `filter` 함수를 같이 사용하니 가독성이 이전보다 증가하였다. 
+
+```typescript
+const category: string | null = '개발';
+const language: string | null = 'Typescript';
+
+// AS-IS
+const result1 =
+  category && language ? [category, language].join('·') : category || language
+
+// TO-BE
+const result2 = [category, language].filter(Boolean).join('·')
+
+// category, language 모두 값이 있는경우
+👉🏾 result1: 개발·Typescript
+👉🏾 result2: 개발·Typescript
+
+// category는 존재하고 language는 null인 경우
+👉🏾 result1: Typescript
+👉🏾 result2: Typescript
+
+// category는 null이고 language는 존재하는 경우
+👉🏾 result1: 개발
+👉🏾 result2: 개발
+
+// 둘 다 null인 경우
+👉🏾 result1: null
+👉🏾 result2: ''
+```
+
 ## 📍 shuffle 함수를 만들어보자
 `JS`로 `shuffle` 함수를 만들 때 가장 먼저 생각나는 메서드는 `sort()` 일 것이다. 아마도 다음 코드처럼 구성하지 않았을까??
 
