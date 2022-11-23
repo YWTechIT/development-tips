@@ -1,5 +1,25 @@
 # css-tips
 
+### 📍 parents div에 의해 unclickable 하게 되는 children div를 clickable하게 만들기
+제목이 어려울 수 있지만 `background: transparent`인 Parent Div 밑에 `clickable` 할 수 있는 Child div가 있을 때 클릭하는 방법을 작성하려고 한다. 
+
+기존에는 부모 Div만 클릭 할 수 있어 자식 Div는 클릭 할 수 없었지만 css의 <a href='https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events'>pointer-events</a> 속성을 이용하여 해결 할 수 있었다. 글로 이해하기 힘들다면 하단의 사진을 보자.(그림은 발(🦶🏾)로 그렸다.)
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1669196249/fgjgacryljjfd4vuynoo.jpg)
+
+내가 해결한 방법은 부모 Div에 `pointer-events: none`을 주고, `clickable` 할 `target Div`에 `pointer-events: all`을 주자. 추가로 `pointer-events`는 모든 브라우저에 지원되는 속성이다. 
+
+하단 `CodePen`에 당시 상황을 동일하게 구현하려했으나 `AS-IS`를 완벽하게 구현하지 못해 `unclickable`에 임의로 `pointer-events: none`을 줬다. 여기에 초점을 맞추는 대신 `clickable`에 `pointer-events: all`을 줌으로써 부모 Div에 의해 클릭이 불가능한 컴포넌트에도 `clickable` 할 수 것에 초점을 맞추면 된다. 
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="pointer-events" src="https://codepen.io/YWTechIT/embed/KKeoMRa?default-tab=js%2Cresult&editable=true&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/YWTechIT/pen/KKeoMRa">
+  pointer-events</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+#### Reference
+- <a href='https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events'>pointer-events - MDN</a>
+
 ### 📍 공백이 포함된 문장 모두 줄바꿈하기
 반응형을 고려하며 공백이 포함된 문장까지 브라우저의 너비가 줄어들면 해당 문장을 모두 줄바꿈해야하는 니즈가 생겼다. 그래서 줄바꿈 관련 CSS인 <a href='https://developer.mozilla.org/ko/docs/Web/CSS/word-break'>word-break</a>와 <a href='https://developer.mozilla.org/ko/docs/Web/CSS/white-space'>white-space</a> 그리고 <a href='https://developer.mozilla.org/ko/docs/Web/CSS/overflow'>overflow</a> 등을 살펴보며 해답을 생각했지만 뾰족한 수가 나오지 않았다.
 
