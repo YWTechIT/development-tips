@@ -1,3 +1,25 @@
+## 📍 알아두면 도움되는 npm commands
+이번에 알아볼 npm 명령어는 `npm run ...`처럼 매번 사용되는 것은 아니지만, 마우스로 조작하기 번거로울 때 도움되는 명령어들이다.
+
+1. `npm docs [package-name]`: 해당 패키지의 `docs`를 볼 수 있다. 예를 들어 `npm docs lodash`를 입력하면 <a href='https://lodash.com/'>lodash docs</a>를 볼 수 있다.(해당 패키지가 프로젝트에 설치되어 있지 않아도 볼 수 있다.)
+2. `npm repo [package-name]`: 해당 패키지를 GitHub에서 볼 수 있다. 예를 들어 `npm repo lodash`를 입력하면 GitHub의 <a href='https://github.com/lodash/lodash'>lodash/lodash</a>페이지를 볼 수 있다. (해당 패키지가 프로젝트에 설치되어 있지 않아도 볼 수 있다.)
+3. `npm outdated`: `package.json`에 있는 모든 패키지의 `current version`, `required version`, `latest version`을 볼 수 있다.
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1670880963/ywtechit/u5r1u1rs1yrosafphh0t.png)
+
+4. `npm v [package-name] versions`: 해당 패키지의 모든 version을 볼 수 있다. 예를 들어 `npm v typescript versions`를 입력하면 npm 페이지의 <a href='https://www.npmjs.com/package/typescript?activeTab=versions'>versions</a>에서 볼 수 있는 버전을 터미널에서 볼 수 있다.
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1670881191/ywtechit/fyudvn5gaefuynhf6pqu.png)
+
+5. `npm audit`: dependencies의 취약성을 확인하고, 취약점이 발견되면 적절한 대안을 알려준다. 취약점이 발견되지 않으면 `0 exit code`가 나온다. `npm audit fix` 혹은 `npm audit fix -f`로 취약점을 수정할 수 있다.  
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1670881461/ywtechit/asenpdmqndxgqeywe5ha.png)
+
+6. `npm v [package-name]`: 해당 패키지의 정보를 볼 수 있다.(`dist`, `dependencies`, `maintainers`, `dist tags` …)
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1670881512/ywtechit/nbbm7rvdpuvypipaf6eg.png)
+
+---
 ## 📍 filter + join 메서드로 가독성있는 코드 작성하기
 `string | null` 타입을 가지는 `a`, `b`를 사용하여 `a·b`로 나타내야한다. 만약, 둘 중에 하나라도 `null`일 경우 `·`를 표시하지 않고, `string` 타입만 나타내야한다. 예를 들어 `a = 'foo'`이고, `b = bar`일 때 둘 다 값이 존재하면 `foo·bar`로, `a`타입만 존재하면 `foo`, `b`타입만 존재하면 `bar`, `a`와 `b` 둘 다 존재하지 않는 경우 `null | ''`을 나타내야한다. 이럴 때 어떻게 가독성있게 코드를 작성 할 것인가? 리액트에서 사용 할 때 `AS-IS`는 조건식과 `join` 메서드를 사용하여 `a && b ? [a, b].join('·') : a || b`로 나타냈는데, 가독성이 너무 떨어졌다. 그래서 `filter` 함수를 같이 사용하니 가독성이 이전보다 증가하였다. 
 
