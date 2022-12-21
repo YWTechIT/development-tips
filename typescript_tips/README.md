@@ -1,5 +1,44 @@
 # typescript_tips
 
+## 📍 ComponentProps로 props type 선언하기
+`React`에서 `Component`를 작성하다 고차 컴포넌트를 사용하기 위해 상위 단계에서 `props`를 받고 하위 단계에서 최종적으로 컴포넌트를 return 할 때 `props`의 타입을 명시해줘야하는 경우가 있다.(그렇지 않으면 타입스크립트가 `props`의 타입을 모르기 때문에 컴파일 에러를 일으킨다.) 그럴 때 `props`의  타입을 전부 가져와서 재 선언하는 것은 번거롭다. 이럴 때 `React.ComponentProps`를 사용하면 타입을 다시 작성하는 번거로움을 피할 수 있다. `React.ComponentProps`의 자세한 설명은 다음과 같다. 만약, `Ref`를 사용하면 `ComponentPropsWithRef`를 사용하자.
+
+```typescript
+    /**
+     * NOTE: prefer ComponentPropsWithRef, if the ref is forwarded,
+     * or ComponentPropsWithoutRef when refs are not supported.
+     */
+    type ComponentProps<T extends keyof JSX.IntrinsicElements | JSXElementConstructor<any>> =
+        T extends JSXElementConstructor<infer P>
+            ? P
+            : T extends keyof JSX.IntrinsicElements
+                ? JSX.IntrinsicElements[T]
+                : {};
+    type ComponentPropsWithRef<T extends ElementType> =
+        T extends (new (props: infer P) => Component<any, any>)
+            ? PropsWithoutRef<P> & RefAttributes<InstanceType<T>>
+            : PropsWithRef<ComponentProps<T>>;
+    type ComponentPropsWithoutRef<T extends ElementType> =
+        PropsWithoutRef<ComponentProps<T>>;
+
+    type ComponentRef<T extends ElementType> = T extends NamedExoticComponent<
+        ComponentPropsWithoutRef<T> & RefAttributes<infer Method>
+    >
+        ? Method
+        : ComponentPropsWithRef<T> extends RefAttributes<infer Method>
+            ? Method
+            : never;
+```
+
+나는 5번 라인의 `type ComponentProps`문을 사용했고 결론적으로 모노 레포로 관리하는 다른 패키지에 미리 선언된 컴포넌트의 타입을 재 선언하지 않았다.
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="ComponentProps" src="https://codepen.io/YWTechIT/embed/KKBwyaq?default-tab=html%2Cresult&theme-id=dark" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/YWTechIT/pen/KKBwyaq">
+  ComponentProps</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+---
 ## 📍 PropsWithChildren으로 children 짧게 작성하기
 `React`에서 `Component`를 작성하다보면 `props`에 `children`을 선언하는 경우가 종종 있다. 그런데, 매번 `children`과 해당 타입을 명시해주는것은 번거롭지 않은가? 그래서 `children`의 타입을 따로 명시해주지 않아도 되는 `react`에서 지원하는 `PropsWithChildren`문법이 있다. `PropsWithChildren`은 `React.PropsWithChildren`로 사용하거나 혹은 `import { PropsWithChildren } from 'react'`로 사용 할 수 있고 타입은 다음과 같다. `type PropsWithChildren<P> = P & { children?: ReactNode | undefined }` 
 
