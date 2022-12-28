@@ -1,5 +1,64 @@
 # typescript_tips
 
+## 📍 Incorrect (variable) is specified more than once, so this usage will be overwritten 에러 해결하기
+
+typescript로 작업하다 다음과 같은 오류를 마주했다.
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1672195489/nfpt4oz4rf6uj7n9b2d7.png)
+
+오류가 발생한 원인은 `getListHref`를 props로 내려준 위치가 잘못되었기 때문인데, 바로 `{...props}` 앞에 선언했기 때문이다. 하단의 `AS-IS`코드를 살펴보면 `{...props}` 앞에 `getListHref`를 선언했는데, 이것은 의미가 없다. 왜냐하면 `...props`로 내려오는 `getListHref`을 최종적으로 적용하기 때문에 처음에 선언한 `getListHref`를 항상 override하기 때문이다. 이럴때는 `TO-BE` 코드처럼 내가 적용하고 싶은 `getListHref`를 `{...props}` 뒤에 선언해주면 오류를 해결 할 수 있다.
+
+```typescript
+// AS-IS
+export function createHeader({ width }: { width: SemanticWIDTHS }) {
+  return function Header(props: ComponentProps<typeof HeaderBase>) {
+    const getListHref = (queries: string) => `?${queries}`
+
+    return <HeaderBase getListHref={getListHref} {...props} />  // 'getListHref' is specified more than once, so this usage will be overwritten.
+  }
+}
+
+// TO-BE
+export function createHeader({ width }: { width: SemanticWIDTHS }) {
+  return function Header(props: ComponentProps<typeof HeaderBase>) {
+    const getListHref = (queries: string) => `?${queries}`
+
+    return <HeaderBase {...props} getListHref={getListHref} />
+  }
+}
+```
+
+잘 이해가 되지 않는다면 다음 코드를 보자. `Bad`에 선언한 `otherInfo.age`는 적용되지 않는다. 왜냐하면 `...myInfo`의 property가 최종적으로 덮어씌우기 때문이다. 그래서, `age`를 포함한 `name`과 `address` 모두 `...myInfo`로 설정이 된다. 반대로 `Good`은 어떨까? `age`와 `name` 모두 `otherInfo`에서 선언한 값이 적용된다. 왜냐하면 `...myInfo`가 제일 먼저 선언되었기 때문에 결과적으로 마지막에 선언한 `age`와 `name`이 적용된다.
+
+```typescript
+const myInfo = {
+  age: 28,
+  name: 'ted',
+  address: 'Hwaseong',
+}
+
+// Bad
+const otherInfo = {
+  age: 25, // This spread always overwrites this property.
+  ...myInfo,
+}
+
+👉🏾 otherInfo :>>  { age: 28, name: 'ted', address: 'Hwaseong' } 
+
+// Good
+const otherInfo = {
+  ...myInfo,
+  age: 25,
+  name: 'jenny',
+}
+
+👉🏾 otherInfo :>>  { age: 25, name: 'jenny', address: 'Hwaseong' } 
+```
+
+Reference
+1. <a href='https://github.com/microsoft/TypeScript/issues/38535'>microsoft / Typescript #38525</a>
+2. <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax'>MDN - Spread_syntax </a>
+
 ## 📍 ComponentProps로 props type 선언하기
 `React`에서 `Component`를 작성하다 고차 컴포넌트를 사용하기 위해 상위 단계에서 `props`를 받고 하위 단계에서 최종적으로 컴포넌트를 return 할 때 `props`의 타입을 명시해줘야하는 경우가 있다.(그렇지 않으면 타입스크립트가 `props`의 타입을 모르기 때문에 컴파일 에러를 일으킨다.) 그럴 때 `props`의  타입을 전부 가져와서 재 선언하는 것은 번거롭다. 이럴 때 `React.ComponentProps`를 사용하면 타입을 다시 작성하는 번거로움을 피할 수 있다. `React.ComponentProps`의 자세한 설명은 다음과 같다. 만약, `Ref`를 사용하면 `ComponentPropsWithRef`를 사용하자.
 
