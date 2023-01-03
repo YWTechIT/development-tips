@@ -1,3 +1,44 @@
+## 📍 Pre & Post scripts를 알아보자
+SEO 최적화를 위해 `Sitemap` 작업 중 `package.json` 파일 내부에 `postbuild` script를 생성하는 작업이 있었다. 이전까지는 `pre`와 `post` prefix를 사용하는 일이 거의 없어 이것들이 하는 역할을 자세히 알지 못했는데, 이번에 알아보고자 npmjs 공식문서를 살펴봤다. 공식문서에서는 `pre`와 `post` scripts를 다음처럼 정의하고 있었다.
+
+To create "pre" or "post" scripts for any scripts defined in the "scripts" section of the package.json, simply create another script with a matching name and add "pre" or "post" to the beginning of them.
+
+요약하자면 `pre` 또는 `post`의 scripts 이름을 동일하게 만들고, prefix에 `pre` 또는 `post`을 추가하면 된다는 뜻인데, 결론적으로 `pre<script>`, `<script>`, `<postscript>`가 모두 존재한다면, 실행순서는 `precompress` -> `comporess` -> `postcompress`가 되는 것이다. 
+
+여기서 중요한것은 `npm run` 커맨드 사용시 `precompress`, `compress`, `postcompress` 모두를 입력하는것이 아니라 `npm run compress` 스크립트만 입력하면 scripts가 다음 순서대로 동작하는 것이다.  
+
+```json
+{
+  "scripts": {
+    "precompress": "{{ executes BEFORE the `compress` script }}",
+    "compress": "{{ run command to compress files }}",
+    "postcompress": "{{ executes AFTER `compress` script }}"
+  }
+}
+```
+
+나는 scripts를 다음처럼 정의했고, `npm run build` 커맨드만 입력해도 자동으로 `build` -> `postbuild`의 순서로 script가 실행되었다.
+
+```json
+{
+  "scripts": {
+    "build": "next build",
+    "postbuild": "next-sitemap",
+  }
+}
+```
+
+그렇다고 모든 scripts가 위에 언급했던 순서로 동작하는 것은 아니다. 몇가지 특정 scripts에는 기존 life cycle과는 다르게 설정되어있는데 `pre<event>` -> `post<event>` -> `<event>` 순서로 동작한다. 
+
+- `prepare`, `prepublish`, `prepublishOnly`, `prepack`, `postpack`, `dependencies`
+
+특정 script의 life cycle을 더 자세히 알고싶다면 하단 Reference 2번 링크를 클릭해보자.
+
+Reference
+1. <a href='https://docs.npmjs.com/cli/v9/using-npm/scripts#pre--post-scripts'>docs.npmjs - pre & post Scripts</a>
+2. <a href='https://docs.npmjs.com/cli/v9/using-npm/scripts#life-cycle-scripts'>docs.npmjs - life-cycle-scripts</a>
+
+---
 ## 📍 알아두면 도움되는 npm commands
 이번에 알아볼 npm 명령어는 `npm run ...`처럼 매번 사용되는 것은 아니지만, 마우스로 조작하기 번거로울 때 도움되는 명령어들이다.
 
