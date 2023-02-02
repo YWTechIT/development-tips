@@ -1,5 +1,25 @@
 # css-tips
 
+### 📍 styled-components를 이용해 특정 element hover시 tooltip 보여주기
+React에서 styled-component로 디자인 작업 중 제목 그대로 특정 element에 마우스 hover시 tooltip을 보여주는 스펙이 있었다. 이때까진 특정 element에 hover만 하면 끝이었는데, 추가로 tooltip까지 동작하게 하는것은 처음이었다. 
+
+내키는대로 코드를 작성했는데, 원하는대로 작동하지 않았다. 공식문서를 찾아보니 component selector 패턴을 통해 스타일에 지정된 다른 구성 요소를 보간하여 자동으로 생성된 클래스 이름을 참조할 수 있는 강력한 패턴이라고 나와있었다. 즉, `styled`로 선언한 컴포넌트를 다른 클래스에서 호출 할 수 있다는 이야기인데, 이것만으로는 원인을 해결하지 못했다.
+
+긴 삽질 끝에 원인을 찾았는데, 첫번째는 `styled` 순서를 잘못 선언했고, 두번째는 Tooltip 컴포넌트의 렌더링 위치가 target 컴포넌트보다 먼저 선언했기 때문이었다. 
+
+결론적으로 다음과 코드를 작성했을 때 정상적으로 동작하는것을 확인 할 수 있다.
+
+<p class="codepen" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-height="300" data-theme-id="dark" data-default-tab="js" data-slug-hash="PoBxbBK" data-editable="true" data-user="YWTechIT" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/YWTechIT/pen/PoBxbBK">
+  styled-component hover</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+
+### Reference
+1. <a href='https://styled-components.com/docs/advanced#referring-to-other-components'>Referring to other components</a>
+
 ### 📍 parents div에 의해 unclickable 하게 되는 children div를 clickable하게 만들기
 제목이 어려울 수 있지만 `background: transparent`인 Parent Div 밑에 `clickable` 할 수 있는 Child div가 있을 때 클릭하는 방법을 작성하려고 한다. 
 
