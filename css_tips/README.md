@@ -1,5 +1,46 @@
 # css-tips
 
+### 📍 line-height 단위 알아보기
+css로 `line-height`를 작성하다보면 값의 단위가 각기 다른 모습을 볼 수 있다. 가령, `normal`을 사용하거나, `number` 타입을 사용하거나, `em`을 붙이는 경우가 있다. 나는 주로 `px`를 사용하지만 동료들은 다른 단위를 사용하는 경우가 있어 기초적인 내용이지만 지금 기억해두면 추후에 공식문서를 찾는 시간을 아낄 수 있지 않을까 하는 마음에 글로 남긴다. (내용은 MDN을 참고했다.)
+
+`line-height`는 주로 text line 사이의 거리를 조절 할 때 사용한다. `line-height`의 단위는 4가지가 있다.
+
+```javascript
+/* 
+ * 1. <number>: line-height: 2.3;
+ * 2. <length>: line-height: 3em;
+ * 3. <percentage>: line-height: 50%;
+ * 4. normal: line-height: normal;
+ */ 
+```
+
+먼저 `normal`은 `user-agent`에 의존한다. Firefox를 포함한 데스크탑 브라우저에서 default값으로 대략 `1.2`의 값을 사용한다. (요소의 `font-family`에 따라 다르다.)
+
+두번째로 `<number>` 타입이다. `unit`은 붙지않고 숫자 형태만 사용하는데, 자신의 `font-size * number`를 하면 된다. 4가지 방법중 선호하는 방식이고, `inherit` 속성으로 인해 예기치 못한 결과를 피할 수 있다.
+
+세번째로 `<length>`이다. box height를 계산하는데 사용되며, `em`은 예기치 못한 결과를 생산한다. (`em`단위는 부모 요소의 글꼴 크기를 의미하는데, `부모 font-size * em`로 설정된다(Relative to the font size of the element itself.))
+
+마지막으로 `<percentage>`이다. 마찬가지로 예기치 못한 결과를 생산한다 . (`percentage`는 자신의 `font-size`를 기준으로 한다. (Relative to the font size of the element itself.)))
+
+#### 💡 Prefer unitless numbers for line-height values
+앞서 `em`과 `percentage`는 예기치 못한 결과를 생산한다고 했는데,  왜 그런지 알아보기 위해 예시를 가져왔다.(<a href='https://developer.mozilla.org/en-US/docs/Web/CSS/line-height#prefer_unitless_numbers_for_line-height_values'>MDN</a>에 있는 예시와 예제 코드를 추가했다.)
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="dyqoXYY" data-editable="true" data-user="YWTechIT" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/YWTechIT/pen/dyqoXYY">
+  line-height</a> by an (<a href="https://codepen.io/YWTechIT">@YWTechIT</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+첫 번째 `div`의 `line-height`는 잘 나오는데, 두 번째 `div`의 `line-height`는 찌그러진 것을 알 수 있다. 그 이유는 첫 번째 `div`의 `line-height`를 계산하면 `h1`의 `font-size`인 `30px * 1.1 = 33.3`이 나오게 되지만, 두 번째 `div`의 `line-height`는 `h1`의 `font-size`가 아니라 부모(`.box`)의 `font-size`를 곱하기 때문에 `15px * 1.1 = 16.5`가 된다. 그렇기 때문에 line-height를 사용할 땐 단위가 없는 값을 선호하게 되는 것이다.
+
+#### 💡 접근성 고려(Accessibility concerns)
+주요 단락 내용에 `line-height`는 최소 `1.5`를 사용하세요. 이것은 난독증처럼 인지 문제가 있는 사람들 뿐만 아니라 저시력자들에게 도움이 될 것입니다. text를 크게 보기 위해 페이지를 확대한 경우, 단위가 없는 값을 사용하면 줄 높이가 비례적으로 조정됩니다.
+
+Reference
+1. <a href='https://developer.mozilla.org/en-US/docs/Web/CSS/line-height'>line-height - MDN</a>
+2. <a href='https://developer.mozilla.org/ko/docs/Learn/CSS/Building_blocks/Values_and_units#%EC%88%AB%EC%9E%90_%EA%B8%B8%EC%9D%B4_%EB%B0%8F_%EB%B0%B1%EB%B6%84%EC%9C%A8'>Values_and_units - MDN</a>
+
 ### 📍 styled-components를 이용해 특정 element hover시 tooltip 보여주기
 React에서 styled-component로 디자인 작업 중 제목 그대로 특정 element에 마우스 hover시 tooltip을 보여주는 스펙이 있었다. 이때까진 특정 element에 hover만 하면 끝이었는데, 추가로 tooltip까지 동작하게 하는것은 처음이었다. 
 
