@@ -1,4 +1,4 @@
-## 📍 default parameter에 falsy value를 넘겨주면 제대로 넘어갈까?
+## 📍 default parameter에 falsy value를 넘겨주면 어떻게 될까?
 ES6 feature 중 하나인 default parameter는 function parameter에 값이 전달되지 않거나 `undefined`인 경우 default parameter를 기본값으로 사용하는 방법이다. 
 
 어느날 `.env`와 함께 default parameter를 사용하다 `undefined`를 제외한 falsy한 값(`false`, `0`, `''`, `null`, etc..)을 넘겨주면 default parameter가 적용이 안 된다는 점을 찾았고, 블로그에 남기자는 생각을 했었다.
