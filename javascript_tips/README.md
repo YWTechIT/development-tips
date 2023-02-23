@@ -1,3 +1,30 @@
+## 📍 default parameter에 falsy value를 넘겨주면 제대로 넘어갈까?
+ES6 feature 중 하나인 default parameter는 function parameter에 값이 전달되지 않거나 `undefined`인 경우 default parameter를 기본값으로 사용하는 방법이다. 
+
+어느날 `.env`와 함께 default parameter를 사용하다 `undefined`를 제외한 falsy한 값(`false`, `0`, `''`, `null`, etc..)을 넘겨주면 default parameter가 적용이 안 된다는 점을 찾았고, 블로그에 남기자는 생각을 했었다.
+
+그럼, 예시를 살펴보자.
+
+```javascript
+function greet(name = "ted") {
+  console.log(`Hello, ${name}!`);
+}
+
+greet(); // Output: "Hello, ted!"
+greet(undefined)  // Output: "Hello, ted!"
+greet("Jenny"); // Output: "Hello, Jenny!"
+
+greet(0); // "Hello, 0!" 
+greet(null); // "Hello, null!" 
+greet(''); //  "Hello, !" 
+greet(false); // "Hello, false!" 
+```
+
+Reference
+1. <a href='http://es6-features.org/#DefaultParameterValues'>ECMAScript6 - Default Parameter Values</a>
+2. <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters#passing_undefined_vs._other_falsy_values'>MDN - Passing undefined vs other falsy values</a>
+3. <a href='https://developer.mozilla.org/en-US/docs/Glossary/Falsy'>MDN - falsy</a>
+
 ## 📍 Pre & Post scripts를 알아보자
 SEO 최적화를 위해 `Sitemap` 작업 중 `package.json` 파일 내부에 `postbuild` script를 생성하는 작업이 있었다. 이전까지는 `pre`와 `post` prefix를 사용하는 일이 거의 없어 이것들이 하는 역할을 자세히 알지 못했는데, 이번에 알아보고자 npmjs 공식문서를 살펴봤다. 공식문서에서는 `pre`와 `post` scripts를 다음처럼 정의하고 있었다.
 
