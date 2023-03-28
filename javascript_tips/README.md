@@ -1,3 +1,36 @@
+## 📍 e.preventDefault()와 e.stopPropagation()을 알아보자.
+`e.preventDefault()`와 `e.stopPropagation()`은 자바스크립트의 이벤트 핸들러라는 공통점이 있지만, 차이점도 있다.
+
+`e.preventDefault()`는 이벤트의 기본 동작이 발생하지 않도록 하기위해 이벤트 객체에서 호출하는 method이다. DOM요소는 저마다 기본 동작이 있는다. 예를 들어 anchor 태그를 클릭하면 href에 지정된 링크로 이동하고, `<input type="checkbox" />`를 클릭하면 체크모양이 생기거나 없어진다. 그리고 `form` 태그에서 `submit`을 하게되면 refresh가 일어난다. 이럴 때 `e.preventDefault()`를 사용하면 지정된 링크로 이동하거나 체크모양을 생기거나 없애는 동작 그리고 refresh하는 동작을 방지할 수 있다. 즉, 해당 태그의 고유한 이벤트 동작을 방지할 수 있다. 
+
+아래 예제에서 input창을 채우고 submit을 눌러보자. `e.preventDefault()`가 있으면 새로고침이 안될 것이고, `e.preventDefault()`가 없으면 새로고침이 될 것이다.(만약, input창이 정상적으로 동작하지 않는다면 크롬이 아닌 타 브라우저(Safari, Firefox, Edge...)로 접속하자. 그리고 codePen embed에 console 탭이 보이지 않으면 <a href='https://codepen.io/YWTechIT/pen/wvEOOPQ?editors-1112'>여기</a>에서 확인하자.)
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="TypeScript,result" data-slug-hash="wvEOOPQ" data-editable="true" data-user="YWTechIT" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the <a href="https://codepen.io/YWTechIT/pen/wvEOOPQ?editors-1112">
+  e.preventDefault</a> by <a href="https://codepen.io/YWTechIT">@YWTechIT</a>
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+`e.stopPropagation()`는 DOM tree를 통해 전파(구체적으로 캡쳐링/버블링 단계)되는 이벤트를 중지하기 위해 이벤트 객체에서 호출하는 method이다. 예를 들어 부모를 갖고있는 자식 element에서 이벤트가 발생하게 되면 부모 element도 자식 이벤트가 전파되는데, `e.stopPropagation()`를 사용함으로써 자신에게 바인딩된 이벤트 핸들러만 실행하도록 하고, 부모 element에게 이벤트가 전파되는 것을 방지할 수 있다. 추가로 링크나 버튼클릭 시 `e.stopPropagation()`를 사용해도 이벤트의 기본 동작은 실행되는 경우가 있는데, 이때는 `e.preventDefault()`를 함께 써줘야한다. 
+
+아래 예제에서 `Click me!`버튼을 눌렀을 때의 console창과 `e.stopPropagation()`를 주석처리하고 `Click me!`버튼을 눌렀을 때의 console창을 비교해보자. (console창이 보이지 않으면 <a href='https://codepen.io/YWTechIT/pen/RwYdddB?editors-1112'>여기</a>에서 확인 할 수 있다.)
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="TypeScript,result" data-slug-hash="RwYdddB" data-editable="true" data-user="YWTechIT" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the <a href="https://codepen.io/YWTechIT/pen/RwYdddB?editors-1112">
+  e.stopPropagation</a> by <a href="https://codepen.io/YWTechIT">@YWTechIT</a>
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+여담으로 `e.stopImmediatePropagation()`메소드는 동일한 이벤트 유형에 대해 여러개의 리스너가 동일한 element에 연결된 경우에 사용하면 이벤트 Propagation을 방지할 수 있다. React에서 사용하려면 브라우저의 고유 이벤트인 nativeEvent 어트리뷰트에서 사용해야한다. (`e.nativeEvent.stopImmediatePropagation()`)
+
+Reference
+1. <a href='https://developer.mozilla.org/ko/docs/Web/API/Event/preventDefault'>Event.preventDefault - MDN</a>
+2. <a href='https://developer.mozilla.org/ko/docs/Web/API/Event/stopPropagation'>Event.stopPropagation - MDN</a>
+3. <a href='https://developer.mozilla.org/en-US/docs/Web/API/Event/stopImmediatePropagation'>Event.stopImmediatePropagation - MDN</a>
+4. <a href="https://ko.reactjs.org/docs/events.html">합성이벤트 - React</a>
+
 ## 📍 default parameter에 falsy value를 넘겨주면 어떻게 될까?
 ES6 feature 중 하나인 default parameter는 function parameter에 값이 전달되지 않거나 `undefined`인 경우 default parameter를 기본값으로 사용하는 방법이다. 
 
