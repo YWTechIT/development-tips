@@ -1,5 +1,25 @@
 # next-js_tips
 
+## 📍 TypeError: Cannot set properties of undefined (setting 'nodeToRestore) 해결방법 알아보기
+`Next.js`에서 특정 컴포넌트를 호출하면 다음 에러가 뜨면서 정상적으로 렌더링이 되지 않는 이슈를 발견했다. 해당 컴포넌트는 <a href='https://github.com/adobe/react-spectrum'>adobe/react-spectrum</a>의 <a href='https://www.npmjs.com/package/@react-aria/focus'>react-aria/focus</a> 패키지를 참조하고 있었다.
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1680700233/eoki5ncrkjyivf4a3269.png)
+
+여러가지 검색해보다 development 단계에서 잠재적인 warning이나 bug를 찾도록 도와주는 <a href='https://nextjs.org/docs/api-reference/next.config.js/react-strict-mode'>react StrictMode</a>가 원인인 것을 발견하고 `next.config.js`에서 `reactStrictMode`을 `false`로 변경했더니 작동이 잘 되었다. 혹은 React18을 17로 다운그레이드해도 정상 작동된다는 <a href='https://github.com/adobe/react-spectrum/issues/3515#issuecomment-1246823646'>comment</a>도 있으니 참고하면 도움이 될 것 같다.
+
+```typescript
+// next.config.js
+
+module.exports = {
+  reactStrictMode: false,
+}
+```
+
+### Reference
+1. <a href='https://nextjs.org/docs/api-reference/next.config.js/react-strict-mode'>Next.js - React Strict Mode</a>
+2. <a href='https://github.com/adobe/react-spectrum/issues/3515'>adobe/react-spectrum - issue #3515</a>
+
+
 ## 📍 next/router 사용 시 무한 렌더링 이슈 해결하기
 `Next.js`로 특정 페이지에 접속하면 무한 새로고침 되는 이슈를 발견했다. 원인은 `next/router - Router.replace` 때문이었는데, 클라이언트 사이드에서 `Router.replace`를 사용한 이유는 필터에 조건을 넣고 검색 버튼을 클릭하면 해당 필터 값을 쿼리에 추가하여 다른 사람에게 링크를 공유할 때 필터를 두 번 조작하지 않도록 하기 위함이었다. 그래서 `Router.replace`와 `state`를 잃지 않고 `pathname`과 `query` 값을 업데이트 할 수 있는 옵션인 `shallow Routing: true`를 추가했으나 무한 렌더링(새로고침) 되는 이슈가 생겼다. 
 
