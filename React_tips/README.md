@@ -1,3 +1,81 @@
+## 📍 Higher Order Component 사용하기
+나는 고차 컴포넌트를 즐겨 사용하지 않지만, React로 작업을 하다 보면 특정 상황에서 고차 컴포넌트를 사용하면 적합한 경우가 종종 있다. (물론 고차 컴포넌트 이외에도 효율적인 접근방법이 있지만, 여기서는 고차 컴포넌트를 사용한다고 가정하자.) 
+
+`id, name, title`가 담긴 리스트 타입의 `values`는 고차함수인 `map` method를 통해 컴포넌트(`<Button />`)를 하나씩 렌더링하고 있는 상황이었다. 여기서 `<Button />` 컴포넌트 내부에는 공통적으로 `useState`가 주입 되어야하는 상황이다. 여기서 나는 HOC를 사용하여 해결했다. 
+
+고차 컴포넌트는 컴포넌트 로직을 재사용하기 위한 React의 고급 기술인데, 컴포넌트를 가져와 새 컴포넌트를 반환하는 함수이다. 나만의 방식대로 조금 덧붙여서 말하자면 상위단계에서 내 마음대로 규칙을 선언(useState 주입)하고, 하위 render 단계에서는 기존의 규칙(내가 렌더링을 하려고 하는 컴포넌트 (`<Button />`))을 따르도록 한다라고 생각하면 조금 더 쉽게 와닿을 것이다. 
+
+아래 코드를 살펴보고 HOC를 어떻게 구성할지 막막하다면 이 글을 통해 조금이나마 도움이 되었으면 좋겠다.
+
+```typescript
+interface FooComponentProps {
+  values: Value[]
+}
+
+interface Value {
+  id: string
+  name: string
+  title: string
+}
+
+export function FooComponent({ values }: FooComponentProps) {
+  return (
+    <>
+      {values.map(({ id, name, title }) => {
+        const Button = withIsOpened(RequestButton)
+
+        return (
+          <div key={id}>
+            <Button id={id} name={name} title={title} />
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+interface RequestButtonProps {
+  id: string
+  name: string
+  title: string
+}
+
+interface IsOpenedProps {
+  isOpened: boolean
+  setIsOpened: Dispatch<SetStateAction<boolean>>
+}
+
+function withIsOpened(
+  WrappedComponent: ComponentType<RequestButtonProps & IsOpenedProps>,
+) {
+  return function WrappedWithIsOpened(props: RequestButtonProps) {
+    const [isOpened, setIsOpened] = useState(false)
+
+    return (
+      <WrappedComponent
+        isOpened={isOpened}
+        setIsOpened={setIsOpened}
+        {...props}
+      />
+    )
+  }
+}
+
+function RequestButton({
+  id,
+  name,
+  title,
+  isOpenRequested,
+  setIsOpenRequested,
+}: RequestButtonProps & IsOpenedProps) {
+  return <div>이곳은 RequestButton입니다.</div>
+}
+```
+
+### Reference
+- <a href='https://ko.reactjs.org/docs/higher-order-components.html'>고차 컴포넌트</a>
+
+---
 ## 📍 && 대신 삼항연산자 사용하기
 리액트로 렌더링 view를 그릴 때 종종 `&&` 연산자를 이용해 조건부 렌더링을 할 때가 있을 것이다. 예를 들어 하단 코드블럭처럼 `isCondition`이 `true`일 경우 `안녕하세요!`를 렌더링하게 된다. 
 
