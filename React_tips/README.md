@@ -65,8 +65,8 @@ function RequestButton({
   id,
   name,
   title,
-  isOpenRequested,
-  setIsOpenRequested,
+  isOpened,
+  setIsOpened,
 }: RequestButtonProps & IsOpenedProps) {
   return <div>이곳은 RequestButton입니다.</div>
 }
