@@ -1,5 +1,51 @@
 # css-tips
 
+### 📍 override 우선순위를 제일 높게 설정하는 2가지 방법
+styled-components를 사용해 기존 style을 override하는 경우 우선순위가 제대로 적용되지 않는 경우가 있다. 이번에 마주한 이슈는 headlessUI 패키지의 <a href='https://github.com/tailwindlabs/headlessui/blob/main/packages/%40headlessui-react/src/components/dialog/dialog.tsx'>Dialog</a> 컴포넌트에 custom style을 override하려는데 의도대로 적용되지 않는 이슈였다. 
+
+부지런히 검색해보니 <a href='https://github.com/styled-components/styled-components/issues/2620'>styled-component issues - #2620</a>에 나와 비슷한 문제를 겪고 있는 글을 찾을 수 있었다.
+
+원인은 React의 <a href='https://react.dev/reference/react-dom/createPortal#usage'>createPortal</a>이었는데, portal의 특성상 portal을 사용하게 되면 해당 element의 DOM이 현재 위치가 아닌 다른 위치로 변경되는데, styled component가 바뀐 DOM의 위치를 알 수 없기 때문이었다.
+
+이런 경우 styled-component에 override를 할 수 없냐? 그건 아니다. styled-component에서 override를 사용할 때 우선순위를 제일 높게 설정할 수 있는 방법이 2가지가 있는데, 첫 번째는 `!important`이고, 두 번째는 `&&&`를 사용하는 것이다. 
+
+`!important`는 에러가 발생하기 쉽고 의도치 않은 부작용을 많이 일으킬 가능성이 있어 사용을 하지 않는 편인데, 구체적인 이유는 다음과 같다.
+
+1. 특이성에 관계없이 해당 속성에 대한 다른 모든 스타일 선언을 재정의하기 때문에 예기치 않은 결과가 발생한다.
+2. 여러 개의 `!important`를 사용하게 되면 유지보수와 디버깅을 어렵게 만든다.
+3. `!important`을 사용하여 선언한 Style을 다른 element에 재사용하기 어렵다.
+4. 여러 개발자와 협업하는 경우 의도치 않은 버그를 일으킬 수 있다.
+
+결론적으로 두 번째 방법을 사용는데, 여기서 `&`은 hash로 변경된 클래스로 대체된다. 따라서 `&`를 3번 사용하면 다음과 같이 변경된다.
+
+```typescript
+const MyStyledComponent = styled(AlreadyStyledComponent)`
+  &&& {
+    color: palevioletred;
+    font-weight: bold;
+  }
+`
+
+// injected CSS then looks like this
+.MyStyledComponent-asdf123.MyStyledComponent-asdf123.MyStyledComponent-asdf123 {
+  color: palevioletred;
+  font-weight: bold;
+}
+```
+
+위 예제처럼 선언하여 이슈를 해결했다.
+
+```typescript
+const Modal = styled(Dialog)`
+  &&& {
+    padding: 30px;
+  }
+`
+```
+
+### Reference
+- <a href='How can I override styles with higher specificity?'>styled-components - How can I override styles with higher specificity?</a>
+
 ### 📍 line-height 단위 알아보기
 css로 `line-height`를 작성하다보면 값의 단위가 각기 다른 모습을 볼 수 있다. 가령, `normal`을 사용하거나, `number` 타입을 사용하거나, `em`을 붙이는 경우가 있다. 나는 주로 `px`를 사용하지만 동료들은 다른 단위를 사용하는 경우가 있어 기초적인 내용이지만 지금 기억해두면 추후에 공식문서를 찾는 시간을 아낄 수 있지 않을까 하는 마음에 글로 남긴다. (내용은 MDN을 참고했다.)
 
