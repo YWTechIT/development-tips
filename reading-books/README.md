@@ -1,4 +1,151 @@
+### 📍 [ 독후감 ] 함수형 자바스크립트를 읽고..
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1682602056/je8yhyszwnnpfd9ifhkl.jpg)
+
+### ✏️ 서론
+이 책은 작년에 사내 프로젝트를 동료와 페어프로그래밍을 하면서 잡담시간에 함수형 프로그래밍이 무엇인지 설명해 주고 관련 서적을 추천해 줘서 읽게 된 책이다. (이후 사내 스터디 주제를 하스켈로 정하면서 함수형 프로그래밍의 연장선이 되었다.)
+
+독서 기간은 `22.10.11.`부터 `23.4.27.`이며, 책은 약 320쪽으로 구성되어있고, 하스켈을 배우는 대신 익숙한 구문을 보며 함수형 프로그래밍에 입문하려는 독자에게 안성맞춤입니다.(라고 서두에 적혀있지만 함수형 프로그래밍 자체의 난이도는 쉬운편은 아니라서 자바스크립트 문법을 어느정도 아는 분에게 권장하고픈 책이다.)
+
+책의 내용은 고계함수, 클로저, 함수 커링/합성 등의 개념과 람다 표현식, 이터레이터, 제너레이터, 프로미스 같은 ES6 그리고 모나드, 리액티브 프로그래밍, 이벤트 중심 및 비동기 코드를 함수형 프로그래밍으로 풀어낸 책이다.
+
+또한, 이 책에서 함수형으로 코드를 작성 할 때 서드파티 라이브러리(<a href='https://lodash.com/'>로대시JS</a>, <a href='https://ramdajs.com/'>람다JS</a>, <a href='https://rxjs.dev/'>RxJS</a> 등..)를 사용했는데, 자바스크립트는 하스켈 같은 순수 함수형 언어가 아니기 때문에 진짜 함수형 언어의 핵심인 커링, 메모화, 느긋한 평가, 불변성 등을 흉내내기위해 사용했다. 라이브러리를 사용함으로써 함수형 프로그래밍의 기법들의 내부를 일관된 방향으로 추상화하고 간단한 함수로 코드를 작성하게 유도하는 고수준 유틸리티 함수와 언어의 부가적인 요소를 제공함으로써 표준 자바스크립트 환경과의 격차를 줄였다.
+
+선언형 프로그래밍의 장점은 여러가지가 있지만 그 중에 하나를 뽑자면 추상화가 아닐까 생각한다. 프로그램의 추상화 수준을 높여 어떻게(How)보다는 무엇(What)을 나타내는지에 집중하기 때문에 간결하고 선언적인 방식으로 복잡한 작업을 처리할 수 있으나, 단점으로는 높은 러닝커브이다. 부수효과를 자주 발생하는 자바스크립트 특징(전역 범위에서 변수/속성/자료구조를 변경, 사용자 입력을 처리, 예외를 일으킨 해당 함수가 붙잡지 않고 그대로 예외를 던짐, HTML문서, 브라우저 쿠키, DB질의, DOM 수정 등..)덕분에 모든 코드를 함수형으로 작성하기보다 명령형적으로 작성하는 것에 익숙해져있는 개발자들은 처음 느끼는 함수형 사고방식이라는 벽에 막히는 경우도 종종 있을 것이다.
+
+### ✏️ 본론
+
+#### 재사용 가능한, 모듈적인 코드로
+
+1. 형식화한 튜플 자료형
+
+```javascript
+const Tuple = function (/* 형식 */) {
+  const typeInfo = Array.prototype.slice.call(arguments); // 튜플에 담긴 인수 형식을 읽습니다.
+  console.log("typeInfo :>> ", typeInfo);
+
+  const _T = function (/* 값 */) {
+    // 내부형 _T는 튜플의 형식과 값이 맞는지 확인합니다.
+    const values = Array.prototype.slice.call(arguments); // 튜플에 저장된 값을 꺼냅니다.
+    if (values.some((val) => val === null || val === undefined)) {
+      throw new ReferenceError("튜플은 null 값을 가질 수 없습니다!");
+    }
+    if (values.length !== typeInfo.length) {
+      // 정의된 형색 개수와 튜플 항수가 일치하는지 체크합니다.
+      throw new TypeError("튜플 항수가 프로토타입과 맞지 않습니다!");
+    }
+    values.forEach((val, index) => {
+      // 각 튜플 값의 형식이 올바른지 checkType함수로 조사합니다. 각 튜플 원소는 ._n(원소 인덱스 n은 1부터 시작)로 참조 가능한 튜플 속성으로 바꿉니다.
+      this["_" + (index + 1)] = checkType(typeInfo[index])(val);
+    }, this);
+    Object.freeze(this);
+  };
+
+  _T.prototype.values = () => {
+    return Object.keys(this).map((k) => this[k], this);
+  };
+  return _T;
+};
+
+const Status = Tuple(Boolean, String);
+console.log("Status :>> ", Status());
+
+```
+
+2. curry: 다변수 함수가 인수를 전부 받을 때까지 실행을 보류, 또는 지연시켜 단계별로 나뉜 단항 함수의 순차열로 전환하는 기법
+
+```javascript
+// 두 인수를 수동으로 커리
+function curry(fn) {
+  return function (firstArg) {
+    // 처음 curry2 호출 시 첫 번째 인수를 포착합니다.
+    return function (secondArg) {
+      // 두 번째 호출 시 두 번째 인수를 포착합니다.
+      return fn(firstArg, secondArg); // 두 인수 firstArg, secondArg로 함수를 실행한 결괏값을 반환합니다.
+    };
+  };
+}
+```
+
+3. 부분 적용(partial application): 함수의 일부 매개변수 값을 처음부터 고정시켜 항수가 더 작은 함수를 생성하는 기법
+
+```javascript
+function partial() {
+  let fn = this;
+  let boundArgs = Array.prototype.slice.call(arguments);
+  let placeholder = undefined;
+
+  let bound = function () {
+    let position = 0;
+    let length = boundArgs.length;
+    for (let i = 0; i < length; i++) {
+      args[i] =
+        boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
+    }
+
+    while (position < arguments.length) {
+      args.push(arguments[position++]);
+    }
+    return fn.apply(this, args);
+  };
+
+  return bound;
+}
+```
+
+4. 함수 합성: 복잡한 작업을 한데 묶어 간단한 작업으로 쪼개는 과정
+
+```javascript
+// compose 구현부
+function compose() {
+  let args = arguments;
+  let start = args.length - 1;
+  return function () {
+    // compose는 실제 인수를 넣고 호출한 또 다른 함수를 출력합니다.
+    let i = start;
+    let result = args[start].apply(this, arguments); // 전달된 인수를 넣고 동적으로 함수를 적용합니다.
+    while (i--) {
+      result = args[i].call(this, result); // 이전 단계 반환값을 다시 인수로 넣고 그다음 함수를 계속 반복 실행합니다.
+    }
+    return result;
+  };
+}
+```
+
+#### 함수형 리액티브 프로그래밍
+Rx.Observable 객체는 함수형과 리액티브, 두 프로그래밍 세상을 하나로 묶습니다. 이 객체는 5장의 map, of, join 등 최소한의 모나드 인터페이스에 해당하는 구현체와 스트림 조작에 특화된 메서드를 여럿 거느립니다. 다음은 SSN 필드값이 올바른지 검증하는 간단한 예제입니다.
+
+```javascript
+// AS-IS
+document
+  .querySelector("#student-ssn")
+  .addEventListener("change", function (event) {
+    let value = event.target.value;
+    value = value.replace(/^\s*|\s*$|\-/g, "");
+    console.log(value.length !== 9 ? "맞음" : "틀림");
+  });
+
+// TO-BE
+Rx.Observable.fromEvent(document.querySelector("#student-ssn"), "change")
+  .map((x) => x.target.value)
+  .map(cleanInput)
+  .map(checkLengthSsn)
+  .subscribe((ssn) =>
+    ssn.isRight ? console.log("Valid") : console.log("Invalid")
+  );
+
+```
+
+
+### ✏️ 결론
+
+어떤 방법을 도입할 때 일장일단을 고려해야한다. 무엇보다 중요한것은, 100% 선언형 혹은 명령형으로 코드를 작성하는 것이 아니라, 각각의 장, 단점을 파악하여 지금 나의 상황을 해결하는 데 더 적합한 방법을 도입하는 것이지 않을까 생각한다.
+
+이번 사내 스터디는 리팩토링을 신청했는데, 스터디 때 참고하는 서적이 <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=236186172'>리팩토링 2판</a>이다. 그래서 다음 서적은 리팩토링 2판으로 정했다. (하나 더 있는데 악명높은 <a href='https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=307477122&start=slayer'>마법사</a> 책이다.)
+
+---
 ### 📍 [ 독후감 ] 3,000만 원으로 시작하는 아파트 투자 프로젝트를 읽고..
+
 
 ![](https://res.cloudinary.com/ywtechit/image/upload/v1681302120/snm6ggcp3i82uk53gnt2.jpg)
 
