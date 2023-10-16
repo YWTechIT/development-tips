@@ -1,3 +1,38 @@
+## 📍 addEventListener의 passive option을 알아보자
+touchstart 이벤트를 이용해 IOS에서 기존 swipe gesture를 block하고 custom swipe를 적용하던 중 console 창에서 Violation을 마주했다. (Violation은 chrome browser 혹은 web에서 에러를 나타내는 것이 아니라 앱 개선에 도움이 되는 경고를 의미한다.) 
+
+`[Violation] Added non-passive event listener to a scroll-blocking 'touchstart' event...`
+
+![](https://res.cloudinary.com/ywtechit/image/upload/v1697457422/nxndpmlfucz5241jubcg.png)
+
+해당 코드는 다음과 같다.
+
+```typescript
+  const handleTouchStart = useCallback((event: TouchEvent) => {
+    const { clientX } = event.touches[0]
+    const isEdgeView =
+      clientX <= MIN_BACK_WIDTH || clientX >= window.innerWidth - MIN_BACK_WIDTH
+
+    if (!isEdgeView) return
+
+    event.preventDefault()
+    setClientX(clientX)
+  }, [])
+```
+
+대부분의 listener는 `preventDefault()`를 호출하지 않지만, 브라우저는 이를 확인하기 위해 이벤트가 완료될 때까지 기다린다.
+
+이러한 이슈를 해결하기 위해 `passive event listeners`를 정의했고, `addEventListener` 세 번째 인자에 `{ passive: true }`를 넣게 되면, 브라우저에게 `preventDefault()`를 호출하지 않겠다는 의미를 전달하고, 브라우저는 리스너를 차단하지 않고 안전하게 스크롤을 수행할 수 있다.
+
+만약, `{ passive: true }`로 설정이 되어있는 상태에서 `preventDefault()`를 호출했다고 걱정하지 말자. 내부적으로 이슈가 생기는 것은 아니고 단지 console창에 warning을 발생할 뿐이다.
+
+기본적으로 passive 옵션을 지정하지 않으면 false로 설정되는데, Safari 이외의 브라우저에서는 `wheel`, `mousewheel`, `touchstart`, `touchmove`는 true로 설정된다.
+
+이번 케이스에서 콘솔창에 Warning이 노출된 원인은 `touchstart` 이벤트에 passive 값을 설정하지 않아 default값인 true로 설정되었고, 핸들러 내부에 `event.preventDefault()`가 호출되었기 때문이었다.
+
+결론: 특정 이벤트(`wheel`, `mousewheel`, `touchstart`, `touchmove`...) 핸들러 코드 내부에 `event.preventDefault()`를 호출하는 경우라면 `{ passive: false }`를 넣어주자.
+
+---
 ## 📍 e.preventDefault()와 e.stopPropagation()을 알아보자.
 `e.preventDefault()`와 `e.stopPropagation()`은 자바스크립트의 이벤트 핸들러라는 공통점이 있지만, 차이점도 있다.
 
